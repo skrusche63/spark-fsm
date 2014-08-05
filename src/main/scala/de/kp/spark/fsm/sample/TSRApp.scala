@@ -20,10 +20,11 @@ package de.kp.spark.fsm.sample
 
 import org.apache.spark.{SparkConf,SparkContext}
 import org.apache.spark.SparkContext._
+
 import org.apache.spark.serializer.KryoSerializer
 import de.kp.spark.fsm.util.SPMFBuilder
+
 import de.kp.spark.fsm.TSR
-import org.apache.spark.serializer.KryoSerializer
 
 object TSRApp {
   
