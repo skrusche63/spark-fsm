@@ -37,4 +37,12 @@ We adapted Viger's original implementation and made his **Top-K Sequential Rules
 
 ## Similarity of Sequential Patterns
 
-Computing the similarity of sequental patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
+Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
+
+The similarity of sequential patterns may be used to cluster, (a) the content of sequence databases to retrieve more homogeneous datasets for sequential pattern mining, or (b) to group the respective mining results. The latter approach is used for customer segmentation based on similar engagement behavior.
+
+For real-world applications, it is important to measure the similarity of more complex sequences, built from itemsets rather than single items. A customer's purchase behavior is an example of such a more complex sequence.
+
+There exist already some similarity measures such as Edit distance(Levenshtein, 1996) and LCS (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.
+
+We therefore deciced to implement the S^2MP similarity measure proposed [here](http://crpit.com/confpapers/CRPITV87Saneifar.pdf).
