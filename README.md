@@ -1,6 +1,6 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
-## Sequential Pattern Mining with Spark
+### Sequential Pattern Mining with Spark
 
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as 
@@ -41,7 +41,7 @@ In 2011 [Philippe Fournier-Viger](http://www.philippe-fournier-viger.com) propos
 
 We adapted Viger's original implementation and made his **Top-K Sequential Rules** algorithm available for Apache Spark.
 
-## Similarity of Sequential Patterns
+### Similarity of Sequential Patterns (S2MP)
 
 Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
 
