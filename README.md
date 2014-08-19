@@ -29,6 +29,12 @@ In the context of web mining, especially web usage mining, companies need to und
 
 Evaluating web sessions and the timely ordered sequences of page visits (within a certain time period), e.g. helps to understand similarities of click-streams much better than treating sessions as sets of page visits. As a results, visitors can be clustered or segmented not only by visited content, but also by their timely behavior and signatures.
 
+### Top K Sequential Rules
+
+In 2011 [Philippe Fournier-Viger](http://www.philippe-fournier-viger.com) proposed a new algorithm to discover the [Top-K Sequential Rules](http://www.philippe-fournier-viger.com/spmf/TopSeqRules_sequential_rules_2.pdf) from a sequence database, similar to Top-K Association Rules from transaction databases.
+
+We adapted Viger's original implementation and made his **Top-K Sequential Rules** algorithm available for Apache Spark.
+
 ## Similarity of Sequential Patterns
 
 Computing the similarity of sequental patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
