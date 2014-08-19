@@ -45,4 +45,10 @@ For real-world applications, it is important to measure the similarity of more c
 
 There exist already some similarity measures such as `Edit distance` (Levenshtein, 1996) and `LCS` (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.
 
-We therefore deciced to implement the `S2MP` similarity measure proposed [here](http://crpit.com/confpapers/CRPITV87Saneifar.pdf).
+We therefore decided to implement the `S2MP` similarity measure proposed by [Saneifar et al](http://crpit.com/confpapers/CRPITV87Saneifar.pdf), which successfully overcomes the mentioned shortcomings.
+
+From the similarity measure `sim(i,j)` of two sequences `i`and `j` it is straightforward to build the sequence engagement vector for sequence `i` with all other sequences. These vectors may then be used to build clusters with algorithms such as KMeans.
+
+In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.
+
+
