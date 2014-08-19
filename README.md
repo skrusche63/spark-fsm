@@ -43,6 +43,6 @@ The similarity of sequential patterns may be used to cluster, (a) the content of
 
 For real-world applications, it is important to measure the similarity of more complex sequences, built from itemsets rather than single items. A customer's purchase behavior is an example of such a more complex sequence.
 
-There exist already some similarity measures such as Edit distance(Levenshtein, 1996) and LCS (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.
+There exist already some similarity measures such as `Edit distance` (Levenshtein, 1996) and `LCS` (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.
 
-We therefore deciced to implement the S^2MP similarity measure proposed [here](http://crpit.com/confpapers/CRPITV87Saneifar.pdf).
+We therefore deciced to implement the `S2MP` similarity measure proposed [here](http://crpit.com/confpapers/CRPITV87Saneifar.pdf).
