@@ -35,7 +35,7 @@ object SPADE {
   private val keep = true
   private val verbose = false
 
-  def extractPatternsFromFile(sc:SparkContext,input:String,support:Double,dfs:Boolean = true):List[Pattern] = {
+  def extractPatternsFromFile(sc:SparkContext,input:String,support:Double,dfs:Boolean=true,stats:Boolean=true):RDD[Pattern] = {
 
     /**
      * STEP #1
@@ -48,11 +48,11 @@ object SPADE {
      * 
      * Build frequent sequence patterns
      */
-    extractPatternsFromRDD(sc,file,support,dfs)
+    extractPatternsFromRDD(sc,file,support,dfs,stats)
     
   }
 
-  def extractPatternsFromRDD(sc:SparkContext, dataset:RDD[(Int,Array[String])], support:Double, dfs:Boolean = true):List[Pattern] = {
+  def extractPatternsFromRDD(sc:SparkContext, dataset:RDD[(Int,Array[String])], support:Double, dfs:Boolean=true,stats:Boolean=true):RDD[Pattern] = {
 	
     /**
      * STEP #1
@@ -150,9 +150,9 @@ object SPADE {
     algorithm.runAlgorithm(freqEQC, total.toInt, keep, verbose)
         
     val patterns = algorithm.getResult()   
-    println(algorithm.printStatistics())
+    if (stats) println(algorithm.printStatistics())
 
-    patterns.toList
+    sc.parallelize(patterns.toList)
     
   }
   

@@ -31,9 +31,6 @@ import scala.collection.mutable.ArrayBuffer
 
 import de.kp.core.tsr.{Rule,Sequence,TSRAlgorithm,Vertical}
 
-import de.kp.core.tsr.{SparseVector,Vertical2}
-
-
 object TSR {
   
   def extractRules(sc:SparkContext,input:String, k:Int, minconf:Double):List[Rule] = {

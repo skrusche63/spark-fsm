@@ -34,6 +34,8 @@ object SPADEApp {
     val input  = "/Work/tmp/spmf/contextPrefixSpan.txt"
     val output = "/Work/tmp/spmf/contextPrefixSpan"
     
+    val result = "/Work/tmp/spmf/result"
+      
     var start = System.currentTimeMillis()
     
     val sc = createLocalCtx("SPADEApp")
@@ -51,12 +53,13 @@ object SPADEApp {
     val dfs = true
     val patterns = SPADE.extractPatternsFromFile(sc, output, support, dfs)    
  
-    println("==============================")
-    for (i <- 0 until patterns.length) {
-      println(patterns(i).toStringToFile())
-    }
-    println("==============================")
-
+    /**
+     * Serialize pattern and write to HDFS
+     */
+    val serialized = patterns.map(pattern => pattern.serialize())
+    serialized.saveAsTextFile(result)
+    
+    serialized.foreach(line => println(line))
     println("Total Time: " + (System.currentTimeMillis() - start) + " ms")
 
   }
