@@ -33,8 +33,8 @@
       <section id="main_content" class="inner">
         <p><img src="https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png" alt="Dr.Krusche &amp; Partner PartG"></p>
 
-<h2>
-<a name="sequential-pattern-mining-with-spark" class="anchor" href="#sequential-pattern-mining-with-spark"><span class="octicon octicon-link"></span></a>Sequential Pattern Mining with Spark</h2>
+<h3>
+<a name="sequential-pattern-mining-with-spark" class="anchor" href="#sequential-pattern-mining-with-spark"><span class="octicon octicon-link"></span></a>Sequential Pattern Mining with Spark</h3>
 
 <p>Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as </p>
@@ -52,18 +52,46 @@ relevant patterns in big datasets that specify (timely ordered) sequences of dat
 
 <p><strong>Sequences from Transactions</strong></p>
 
-<p>In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. 
-Each transaction is a collection of the items a particular customer ordered. For marketeers it is very useful to determine which 
-item is bought one after another, and to predict from that which item will be probably bought next.</p>
+<p>In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. Each transaction is a collection of the items a particular customer ordered (itemset). </p>
+
+<p>Sequential Patterns are very interesting in marketbasket analysis as they specify inter-transaction correlations, and e.g. discover which items are frequently bought one after another. For marketers, this is a valuable insight from which they may predict which item will be probably bought next.</p>
 
 <p><strong>Sequences from Web Sessions</strong></p>
 
-<p>In the context of web mining, especially web usage mining, companies need to understand what motivates their customers to purchase 
-and how to influence the buying process to develop successful promotional activities.</p>
+<p>In the context of web mining, especially web usage mining, companies need to understand what motivates their customers to purchase and how to influence the buying process to develop successful promotional activities.</p>
 
-<p>Evaluating web sessions and the timely ordered sequences of page visits (within a certain time period), e.g. helps to understand 
-similarities of click-streams much better than treating sessions as sets of page visits. As a results, visitors can be clustered 
-or segmented not only by visited content, but also by their timely behavior and signatures.</p>
+<p>Evaluating web sessions and the timely ordered sequences of page visits (within a certain time period), e.g. helps to understand similarities of click-streams much better than treating sessions as sets of page visits. As a results, visitors can be clustered or segmented not only by visited content, but also by their timely behavior and signatures.</p>
+
+<h4>
+<a name="sequential-pattern-discovery-using-equivalence-classes-spade" class="anchor" href="#sequential-pattern-discovery-using-equivalence-classes-spade"><span class="octicon octicon-link"></span></a>Sequential Pattern Discovery using Equivalence Classes (SPADE)</h4>
+
+<p>SPADE is a fast and efficient algorithm to discover frequent sequential patterns from large databases. It utilizes combinatorial properties to decompose the mining task into smaller sub-tasks that can be independently solved in memory using efficient lattice search techniques, and using simple join operations.</p>
+
+<p>We adapted the implementation of <a href="http://www.philippe-fournier-viger.com">Philippe Fournier-Viger</a> and made the SPADE algorithm availaible for Apache Spark.</p>
+
+<h4>
+<a name="top-k-sequential-rules-tsr" class="anchor" href="#top-k-sequential-rules-tsr"><span class="octicon octicon-link"></span></a>Top K Sequential Rules (TSR)</h4>
+
+<p>In 2011 <a href="http://www.philippe-fournier-viger.com">Philippe Fournier-Viger</a> proposed a new algorithm to discover the <a href="http://www.philippe-fournier-viger.com/spmf/TopSeqRules_sequential_rules_2.pdf">Top-K Sequential Rules</a> from a sequence database, similar to Top-K Association Rules from transaction databases.</p>
+
+<p>We adapted Viger's original implementation and made his <strong>Top-K Sequential Rules</strong> algorithm available for Apache Spark.</p>
+
+<hr><h3>
+<a name="similarity-of-sequential-patterns-s2mp" class="anchor" href="#similarity-of-sequential-patterns-s2mp"><span class="octicon octicon-link"></span></a>Similarity of Sequential Patterns (S2MP)</h3>
+
+<p>Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    </p>
+
+<p>The similarity of sequential patterns may be used to cluster, (a) the content of sequence databases to retrieve more homogeneous datasets for sequential pattern mining, or (b) to group the respective mining results. The latter approach is used for customer segmentation based on similar engagement behavior.</p>
+
+<p>For real-world applications, it is important to measure the similarity of more complex sequences, built from itemsets rather than single items. A customer's purchase behavior is an example of such a more complex sequence.</p>
+
+<p>There exist already some similarity measures such as <code>Edit distance</code> (Levenshtein, 1996) and <code>LCS</code> (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.</p>
+
+<p>We therefore decided to implement the <code>S2MP</code> similarity measure proposed by <a href="http://crpit.com/confpapers/CRPITV87Saneifar.pdf">Saneifar et al</a>, which successfully overcomes the mentioned shortcomings.</p>
+
+<p>From the similarity measure <code>sim(i,j)</code> of two sequences <code>i</code>and <code>j</code> it is straightforward to build the sequence engagement vector for sequence <code>i</code> with all other sequences. These vectors may then be used to build clusters with algorithms such as KMeans.</p>
+
+<p>In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.</p>
       </section>
     </div>
 
