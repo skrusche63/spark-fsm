@@ -59,4 +59,9 @@ From the similarity measure `sim(i,j)` of two sequences `i`and `j` it is straigh
 
 In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.
 
+---
+
+### Clustering of Sequential Patterns (SKMeans)
+
+Clustering of sequential data or patterns becomes more and more relevant for business applications. `SKMeans` is a modified version of Apache Spark's KMeans algorithm and is optimized for clustering sequential patterns based on the `S2MP` similarity measure. 
 
