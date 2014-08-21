@@ -50,6 +50,8 @@ It has been found very useful in domains such as </p>
 <p>It is an extension to the concept of association rule mining and solves the problem of discovering statistically 
 relevant patterns in big datasets that specify (timely ordered) sequences of data.</p>
 
+<p><img src="https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/spark-fsm.png" alt="Spark-FSM"></p>
+
 <p><strong>Sequences from Transactions</strong></p>
 
 <p>In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. Each transaction is a collection of the items a particular customer ordered (itemset). </p>
@@ -92,6 +94,11 @@ relevant patterns in big datasets that specify (timely ordered) sequences of dat
 <p>From the similarity measure <code>sim(i,j)</code> of two sequences <code>i</code>and <code>j</code> it is straightforward to build the sequence engagement vector for sequence <code>i</code> with all other sequences. These vectors may then be used to build clusters with algorithms such as KMeans.</p>
 
 <p>In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.</p>
+
+<hr><h3>
+<a name="clustering-of-sequential-patterns-skmeans" class="anchor" href="#clustering-of-sequential-patterns-skmeans"><span class="octicon octicon-link"></span></a>Clustering of Sequential Patterns (SKMeans)</h3>
+
+<p>Clustering of sequential data or patterns becomes more and more relevant for business applications. <code>SKMeans</code> is a modified version of Apache Spark's KMeans algorithm and is optimized for clustering sequential patterns based on the <code>S2MP</code> similarity measure. </p>
       </section>
     </div>
 
