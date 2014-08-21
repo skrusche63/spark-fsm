@@ -16,6 +16,8 @@ and more.
 It is an extension to the concept of association rule mining and solves the problem of discovering statistically 
 relevant patterns in big datasets that specify (timely ordered) sequences of data.
 
+![Spark-FSM](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/spark-fsm.png)
+
 **Sequences from Transactions**
 
 In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. Each transaction is a collection of the items a particular customer ordered (itemset). 
