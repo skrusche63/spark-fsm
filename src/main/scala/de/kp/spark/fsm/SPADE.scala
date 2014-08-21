@@ -226,8 +226,8 @@ object SPADE {
     
     sc.textFile(input).map(valu => {
       
-      val parts = valu.split(",")  
-      (parts(0).toInt,parts(1).split(" "))
+      val Array(sid,seq) = valu.split("\\|")  
+      (sid.toInt,seq.split(" "))
     
     })
 

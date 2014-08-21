@@ -153,10 +153,10 @@ object TSR {
     
   private def textfile(sc:SparkContext, input:String):RDD[(Int,Array[String])] = {
     
-    sc.textFile(input).map(valu => {
+    sc.textFile(input).filter(line => line.isEmpty == false).map(valu => {
       
-      val parts = valu.split(",")  
-      (parts(0).toInt,parts(1).split(" "))
+      val Array(sid,seq) = valu.split("\\|")  
+      (sid.toInt,seq.split(" "))
     
     })
 

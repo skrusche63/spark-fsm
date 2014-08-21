@@ -18,17 +18,12 @@ package de.kp.spark.fsm.sample
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import org.apache.spark.{SparkConf,SparkContext}
-import org.apache.spark.SparkContext._
-
-import org.apache.spark.serializer.KryoSerializer
-import de.kp.spark.fsm.util.SPMFBuilder
-
+import de.kp.spark.fsm.util.{SparkApp,SPMFBuilder}
 import de.kp.spark.fsm.TSR
 
-object TSRApp {
+object TSRApp extends SparkApp {
   
-  private val prepare = true
+  private val prepare = false
   
   def main(args:Array[String]) {
 
@@ -41,7 +36,7 @@ object TSRApp {
     
     if (prepare) {
       
-      SPMFBuilder.build(sc, input, "BMS", Some(output))
+      SPMFBuilder.build(sc, input, "SPMF", 1000, Some(output))
       println("Prepare Time: " + (System.currentTimeMillis() - start) + " ms")
       
       start = System.currentTimeMillis()
@@ -72,33 +67,6 @@ object TSRApp {
     println("==================================")
     println("Total time: " + (end-start) + " ms")
     
-  }
-  
-  private def createLocalCtx(name:String):SparkContext = {
-
-	System.setProperty("spark.executor.memory", "4g")
-	System.setProperty("spark.kryoserializer.buffer.mb","256")
-	/**
-	 * Other configurations
-	 * 
-	 * System.setProperty("spark.cores.max", "532")
-	 * System.setProperty("spark.default.parallelism", "256")
-	 * System.setProperty("spark.akka.frameSize", "1024")
-	 * 
-	 */	
-    val runtime = Runtime.getRuntime()
-	runtime.gc()
-		
-	val cores = runtime.availableProcessors()
-		
-	val conf = new SparkConf()
-	conf.setMaster("local["+cores+"]")
-		
-	conf.setAppName(name);
-    conf.set("spark.serializer", classOf[KryoSerializer].getName)		
-        
-	new SparkContext(conf)
-		
   }
 
 }

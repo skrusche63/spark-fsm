@@ -18,7 +18,6 @@ package de.kp.spark.fsm.sim
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import java.util.Random
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -28,7 +27,7 @@ import scala.collection.mutable.ArrayBuffer
  * 
  * http://crpit.com/confpapers/CRPITV87Saneifar.pdf
  */
-class SeqSimilarity(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
+class SMeasure(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
  
   /*
    * The mapping score measure the resemblance of 
@@ -57,7 +56,7 @@ class SeqSimilarity(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
    * This method calculates the similarity 
    * between two sequences of Array[Int] 
    */
-  def compute(seq1:Array[Array[Int]], seq2:Array[Array[Int]], method:String="cosine"):Double = {
+  def compute(seq1:Array[Array[Int]], seq2:Array[Array[Int]], method:String="intersection"):Double = {
 
     this.seq1 = seq1
     this.len1 = seq1.length
@@ -73,7 +72,7 @@ class SeqSimilarity(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
     
     mapOrder = Array.fill[Int](len1)(0)    
     weights = calcWeights(method)
-        
+    
     calcMapScore()
     calcOrdScore()
 
@@ -97,7 +96,7 @@ class SeqSimilarity(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
                     
         matrix(i)(j) = method match {
           
-          case "cosine"       => cosineSimilarity(seq1(i),seq2(j))          
+          case "cosine"       => cosineSimilarity(seq1(i),seq2(j))        
           case "intersection" => intersectionSimilarity(seq1(i),seq2(j))
           case "jacquard"     => jaccardSimilarity(seq1(i),seq2(j))
           
@@ -194,7 +193,7 @@ class SeqSimilarity(mapcoeff:Double=0.5, ordcoeff:Double=0.5) {
        * we take the first one 
        */
       var max_pos = weights_i.indexOf(weights_i.max)
-
+     
       /* 
        * Set all mappings associated with a meanininglessly 
        * small weight to -1 

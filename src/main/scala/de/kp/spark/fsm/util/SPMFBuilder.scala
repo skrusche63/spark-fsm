@@ -24,19 +24,19 @@ import org.apache.spark.rdd.RDD
 
 object SPMFBuilder {
   
-  def build(sc:SparkContext,input:String,format:String, output:Option[String] = None):Option[RDD[String]] = {
+  def build(sc:SparkContext,input:String,format:String, limit:Int = 1000, output:Option[String] = None):Option[RDD[String]] = {
   
     val file = format match {
         
-      case "BMS" => Some(fromBMS(sc,input))
+      case "BMS" => Some(fromBMS(sc,input,limit))
         
-      case "CSV" => Some(fromCSV(sc,input))
+      case "CSV" => Some(fromCSV(sc,input,limit))
        
-      case "KOSARAK" => Some(fromKosarak(sc,input))
+      case "KOSARAK" => Some(fromKosarak(sc,input,limit))
         
-      case "SNAKE" => Some(fromSnake(sc,input))
+      case "SNAKE" => Some(fromSnake(sc,input,limit))
       
-      case "SPMF" => Some(fromSPMF(sc,input))
+      case "SPMF" => Some(fromSPMF(sc,input,limit))
 
       case _ => None
       
@@ -63,7 +63,7 @@ object SPMFBuilder {
     
   }
   
-  private def fromBMS(sc:SparkContext,input:String):RDD[String] = {
+  private def fromBMS(sc:SparkContext,input:String,limit:Int):RDD[String] = {
     
     val source = sc.textFile(input).map(valu => {
           
@@ -88,11 +88,11 @@ object SPMFBuilder {
       
     })
   
-    index(sc,source)
+    index(sc,source,limit)
     
   }      
 
-  private def fromCSV(sc:SparkContext,input:String):RDD[String] = {
+  private def fromCSV(sc:SparkContext,input:String,limit:Int):RDD[String] = {
 
     val source = sc.textFile(input).map(valu => {
           
@@ -111,11 +111,11 @@ object SPMFBuilder {
       
     })
 
-    index(sc,source)
+    index(sc,source,limit)
     
   }
 
-  private def fromKosarak(sc:SparkContext,input:String):RDD[String] = {
+  private def fromKosarak(sc:SparkContext,input:String,limit:Int):RDD[String] = {
 
     val source = sc.textFile(input).map(valu => {
           
@@ -134,11 +134,11 @@ object SPMFBuilder {
       
     })
 
-    index(sc,source)
+    index(sc,source,limit)
 	
   }
 	
-  private def fromSnake(sc:SparkContext,input:String):RDD[String] = {
+  private def fromSnake(sc:SparkContext,input:String,limit:Int):RDD[String] = {
 
     val source = sc.textFile(input).map(valu => {
 		  
@@ -171,18 +171,18 @@ object SPMFBuilder {
       
     }).filter(line => (line.charAt(0) != '#'))
 
-    index(sc,source)
+    index(sc,source,limit)
 
   }
 
-  private def fromSPMF(sc:SparkContext,input:String):RDD[String] = {
+  private def fromSPMF(sc:SparkContext,input:String,limit:Int):RDD[String] = {
     
     val source = sc.textFile(input)
-    index(sc,source)
+    index(sc,source,limit)
     
   }
   
-  private def index(sc:SparkContext,source:RDD[String]):RDD[String] = {
+  private def index(sc:SparkContext,source:RDD[String],limit:Int):RDD[String] = {
     
     /**
      * Repartition source to single partition
@@ -192,12 +192,9 @@ object SPMFBuilder {
     val index = sc.parallelize(Range.Long(0, file.count, 1),file.partitions.size)
     val zip = file.zip(index) 
     
-    zip.map(valu => {
-      
-      val (line,no) = valu
-      no + "," + line
-      
-    })
+    val sample = zip.map(valu => "" + valu._2 + "|" + valu._1).take(limit)
+    sc.parallelize(sample,1)
+    
   }
   
   private def save(file:RDD[String], output:String) {
