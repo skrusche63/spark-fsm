@@ -24,6 +24,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import de.kp.core.spade._
+import de.kp.spark.fsm.source.FileSource
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ArrayBuffer,HashMap}
@@ -35,25 +36,19 @@ object SPADE {
   private val keep = true
   private val verbose = false
 
-  def extractPatternsFromFile(sc:SparkContext,input:String,support:Double,dfs:Boolean=true,stats:Boolean=true):RDD[Pattern] = {
+  def extractFilePatterns(sc:SparkContext,input:String,support:Double,dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
+    
+    val fileSource = new FileSource(sc)
+    val dataset = fileSource.connect(input)
 
-    /**
-     * STEP #1
-     * 
-     * Read data from file system
-     */
-    val file = textfile(sc,input)
-    /**
-     * STEP #2
-     * 
-     * Build frequent sequence patterns
-     */
-    extractPatternsFromRDD(sc,file,support,dfs,stats)
+    extractRDDPatterns(dataset,support,dfs,stats)
     
   }
 
-  def extractPatternsFromRDD(sc:SparkContext, dataset:RDD[(Int,Array[String])], support:Double, dfs:Boolean=true,stats:Boolean=true):RDD[Pattern] = {
+  def extractRDDPatterns(dataset:RDD[(Int,Array[String])], support:Double, dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
 	
+    val sc = dataset.context
+    
     /**
      * STEP #1
      * 
@@ -152,7 +147,7 @@ object SPADE {
     val patterns = algorithm.getResult()   
     if (stats) println(algorithm.printStatistics())
 
-    sc.parallelize(patterns.toList)
+    patterns.toList
     
   }
   

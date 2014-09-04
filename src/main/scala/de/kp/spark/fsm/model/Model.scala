@@ -23,6 +23,8 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read,write}
 
+import de.kp.spark.fsm.{FSMPattern,FSMRule}
+
 case class FSMParameters(
   /*
    * Number of rules used by the TSR algorithm
@@ -79,11 +81,11 @@ case class FSMResponse(
   /*
    * Patterns returned from SPADE
    */
-  patterns:Option[String],
+  patterns:Option[List[FSMPattern]],
   /*
    * Rules returned from TSR
    */
-  rules:Option[String],
+  rules:Option[List[FSMRule]],
   /*
    * Predictions returned from TSR
    */
@@ -131,12 +133,18 @@ object FSMMessages {
   def ANTECEDENTS_DO_NOT_EXIST(uid:String):String = String.format("""No antecedents found for uid '%s'.""", uid)
 
   def ALGORITHM_IS_UNKNOWN(uid:String,algorithm:String):String = String.format("""Algorithm '%s' is unknown for uid '%s'.""", algorithm, uid)
+
+  def MINING_STARTED(uid:String) = String.format("""Mining started for uid '%s'.""", uid)
+  
+  def MISSING_PARAMETERS(uid:String):String = String.format("""Parameters are missing for uid '%s'.""", uid)
  
   def NO_ALGORITHM_PROVIDED(uid:String):String = String.format("""No algorithm provided for uid '%s'.""", uid)
 
   def NO_PARAMETERS_PROVIDED(uid:String):String = String.format("""No parameters provided for uid '%s'.""", uid)
 
   def NO_SOURCE_PROVIDED(uid:String):String = String.format("""No source provided for uid '%s'.""", uid)
+
+  def PATTERNS_DO_NOT_EXIST(uid:String):String = String.format("""The patterns for uid '%s' do not exist.""", uid)
 
   def RULES_DO_NOT_EXIST(uid:String):String = String.format("""The rules for uid '%s' do not exist.""", uid)
 

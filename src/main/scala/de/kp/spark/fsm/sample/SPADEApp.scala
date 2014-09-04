@@ -23,7 +23,7 @@ import de.kp.spark.fsm.SPADE
 
 object SPADEApp extends SparkApp {
    
-  private val prepare = true
+  private val prepare = false
  
   def main(args:Array[String]) {
 
@@ -47,13 +47,12 @@ object SPADEApp extends SparkApp {
     val support = 0.66 //0.00085
     
     val dfs = true
-    val patterns = SPADE.extractPatternsFromFile(sc, output, support, dfs)    
+    val patterns = SPADE.extractFilePatterns(sc, output, support, dfs)    
  
     /**
-     * Serialize pattern and write to HDFS
+     * Serialize pattern
      */
     val serialized = patterns.map(pattern => pattern.serialize())
-    serialized.saveAsTextFile(result)
     
     serialized.foreach(line => println(line))
     println("Total Time: " + (System.currentTimeMillis() - start) + " ms")
