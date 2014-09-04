@@ -194,8 +194,14 @@ class FSMMiner extends Actor with ActorLogging {
   }
 
   private def algorithmToActor(algorithm:String,jobConf:JobConf):ActorRef = {
-  
-    null
+
+    val actor = if (algorithm == FSMAlgorithms.SPADE) {      
+      context.actorOf(Props(new SPADEActor(jobConf)))      
+      } else {
+       context.actorOf(Props(new TSRActor(jobConf)))
+      }
+    
+    actor
     
   }
 
