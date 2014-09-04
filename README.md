@@ -2,8 +2,6 @@
 
 ### Sequence Mining Engine
 
-#### Sequential Pattern Mining with Spark
-
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as 
 
