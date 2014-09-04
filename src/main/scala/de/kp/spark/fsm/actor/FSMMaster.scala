@@ -27,6 +27,7 @@ import akka.actor.{OneForOneStrategy, SupervisorStrategy}
 import akka.routing.RoundRobinRouter
 
 import de.kp.spark.fsm.Configuration
+import de.kp.spark.fsm.model._
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Future
@@ -39,10 +40,55 @@ class FSMMaster extends Actor with ActorLogging {
   override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries=retries,withinTimeRange = DurationInt(time).minutes) {
     case _ : Exception => SupervisorStrategy.Restart
   }
- 
+
+  val miner = context.actorOf(Props[FSMMiner])
+  val questor = context.actorOf(Props[FSMQuestor].withRouter(RoundRobinRouter(workers)))
+  
   def receive = {
     
+    case req:String => {
+      
+      implicit val ec = context.dispatcher
+
+      val duration = Configuration.actor      
+      implicit val timeout:Timeout = DurationInt(duration).second
+	  	    
+	  val origin = sender
+
+	  val deser = FSMModel.deserializeRequest(req)
+	  val (uid,task) = (deser.uid,deser.task)
+
+	  val response = deser.task match {
+        
+        case "start" => ask(miner,deser).mapTo[FSMResponse]
+        case "status" => ask(miner,deser).mapTo[FSMResponse]
+        
+        case "rules" => ask(questor,deser).mapTo[FSMResponse]
+        case "patterns" => ask(questor,deser).mapTo[FSMResponse]
+
+        case "predict" => ask(questor,deser).mapTo[FSMResponse]
+       
+        case _ => {
+
+          Future {          
+            val message = FSMMessages.TASK_IS_UNKNOWN(uid,task)
+            new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
+          } 
+          
+        }
+      
+      }
+      response.onSuccess {
+        case result => origin ! FSMModel.serializeResponse(result)
+      }
+      response.onFailure {
+        case result => origin ! FSMStatus.FAILURE	      
+	  }
+      
+    }
+  
     case _ => {}
     
   }
+
 }
