@@ -29,35 +29,40 @@ import org.apache.hadoop.mapred.TextInputFormat
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
+import de.kp.spark.fsm.source.FileSource
 import de.kp.core.tsr.{Rule,Sequence,TSRAlgorithm,Vertical}
 
 object TSR {
   
-  def extractRules(sc:SparkContext,input:String, k:Int, minconf:Double):List[Rule] = {
-          
-    /**
-     * STEP #1
-     * 
-     * Read data from file system
-     */
-    val file = textfile(sc,input).cache()
+  def extractFileRules(sc:SparkContext,input:String, k:Int, minconf:Double):List[Rule] = {
+    
+    val fileSource = new FileSource(sc)
+    val dataset = fileSource.connect(input)
+    
+    extractRDDRules(dataset,k,minconf)
+    
+  }
+  
+  def extractRDDRules(dataset:RDD[(Int,Array[String])],k:Int, minconf:Double):List[Rule] = {
+              
+    val sc = dataset.context
     
     /**
-     * STEP #2
+     * STEP #1
      * 
      * Determine max & min item; note, that we have to make sure,
      * that ctrl integer, i.e. -1 and -2 are not taken into account
      */
-    val ids = file.flatMap(value => value._2.map(item => Integer.parseInt(item))).filter(valu => valu > -1).collect()
+    val ids = dataset.flatMap(value => value._2.map(item => Integer.parseInt(item))).filter(valu => valu > -1).collect()
     
     val max = sc.broadcast(ids.max)
     val min = sc.broadcast(ids.min)
     /**
-     * STEP #3
+     * STEP #2
      * 
      * Build sequences
      */
-    val sequences = file.map(valu => newSequence(valu._1,valu._2))
+    val sequences = dataset.map(valu => newSequence(valu._1,valu._2))
     
     def seqOp(vert:Vertical, seq:Sequence):Vertical = {
       
@@ -105,7 +110,7 @@ object TSR {
     val seqs = sequences.collect()
     
     /**
-     * STEP #4
+     * STEP #3
      * 
      * Apply algorithm to determine frequent sequence patterns
      */ 
