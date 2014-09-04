@@ -87,8 +87,15 @@ object RuleCache {
   
   private def isEqual(itemset1:List[Int],itemset2:List[Int]):Boolean = {
     
-    val intersect = itemset1.intersect(itemset2)
-    intersect.size == itemset1.size
+    if (itemset1.length != itemset2.length) {
+      return false
+    }
+    var sum:Int = 0
+    (0 until itemset1.length).foreach(i => {
+      sum += Math.abs(itemset1(i) - itemset2(i))
+    })
+    
+    (sum == 0)
     
   }
 }

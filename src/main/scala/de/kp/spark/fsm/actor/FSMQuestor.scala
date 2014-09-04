@@ -39,7 +39,28 @@ class FSMQuestor extends Actor with ActorLogging {
       task match {
         
         case "predict" => {
-         // TODO
+
+          val resp = if (RuleCache.exists(uid) == false) {           
+            val message = FSMMessages.RULES_DO_NOT_EXIST(uid)
+            new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
+            
+          } else {    
+             
+            val antecedent = req.itemset.getOrElse(null)
+             if (antecedent == null) {
+               val message = FSMMessages.ANTECEDENTS_DO_NOT_EXIST(uid)
+               new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
+             
+             } else {
+            
+              val consequent = RuleCache.consequent(uid,antecedent)
+              new FSMResponse(uid,None,None,None,Some(consequent),FSMStatus.SUCCESS)
+             
+             }
+            
+          }
+           
+          origin ! FSMModel.serializeResponse(resp)
         }
 
         case "patterns" => {

@@ -64,6 +64,10 @@ case class FSMRequest(
    */
   parameters:Option[FSMParameters],
   /*
+   * The itemset (antecedent) for which a consequent needs to be predicted
+   */
+  itemset:Option[List[Int]],
+  /*
    * Specification of the data source used by the algorithms
    */
   source:Option[FSMSource]  
@@ -89,7 +93,7 @@ case class FSMResponse(
   /*
    * Predictions returned from TSR
    */
-  predictions:Option[String],
+  predictions:Option[List[Int]],
   /*
    * Return status
    */
