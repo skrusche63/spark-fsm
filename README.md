@@ -18,14 +18,25 @@ relevant patterns in big datasets that specify (timely ordered) sequences of dat
 
 ![Spark-FSM](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/spark-fsm.png)
 
-**Sequences from Transactions**
+#### Market Basket Analysis
 
-In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. Each transaction is a collection of the items a particular customer ordered (itemset). 
+In market basket analysis, a sequence is built from the transactions of the customers, ordered by the transaction time. The most common interpretation of a transaction is that of a collection of the items a particular customer ordered (itemset). 
 
-Sequential Patterns are very interesting in marketbasket analysis as they specify inter-transaction correlations, and e.g. discover which items are frequently bought one after another. For marketers, this is a valuable insight from which they may predict which item will be probably bought next.
+Sequential Patterns are very interesting in marketbasket analysis as they specify inter-transaction correlations, and e.g. discover `which items are frequently bought one after another.`
 
+#### Product Recommendations
 
-**Sequences from Web Sessions**
+Recommendation engines are often built from rating data, provided by customers that were asked to vote for a certain product or service. From such data, the customer engagement for all products or services of a company can be derived. Items with the highest engagements are then used for a recommendation, hopefully filtered by those that are already in the cart of or have been purchased in recent transactions.
+
+An alternative is to discover those items that were frequently bought together in the past. The respective relations between these products are derived from association rule mining and result in recommendations such as
+
+> Customers who looked at or bought these items also looked at or bought those items.
+
+The customer purchase behavior, and here the sequence of buyings, is an excellent indicator for the (hidden) customer's intent. Recommendations that also take the relations between sequences of buyings into account, therefore reflect customer behavior much better than other techniques.
+
+The Sequence Mining Engine discovers the top sequential rules for item sequences that can be often found together and provides product recommendations from these rules. 
+
+#### Web Usage Mining
 
 In the context of web mining, especially web usage mining, companies need to understand what motivates their customers to purchase and how to influence the buying process to develop successful promotional activities.
 
