@@ -1,6 +1,8 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
-### Sequential Pattern Mining with Spark
+### Sequence Mining Engine
+
+#### Sequential Pattern Mining with Spark
 
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as 
@@ -31,7 +33,7 @@ In the context of web mining, especially web usage mining, companies need to und
 
 Evaluating web sessions and the timely ordered sequences of page visits (within a certain time period), e.g. helps to understand similarities of click-streams much better than treating sessions as sets of page visits. As a results, visitors can be clustered or segmented not only by visited content, but also by their timely behavior and signatures.
 
-#### Sequential Pattern Discovery using Equivalence Classes (SPADE)
+##### Sequential Pattern Discovery using Equivalence Classes (SPADE)
 
 SPADE is a fast and efficient algorithm to discover frequent sequential patterns from large databases. It utilizes combinatorial properties to decompose the mining task into smaller sub-tasks that can be independently solved in memory using efficient lattice search techniques, and using simple join operations.
 
@@ -45,7 +47,7 @@ We adapted Viger's original implementation and made his **Top-K Sequential Rules
 
 ---
 
-### Similarity of Sequential Patterns (S2MP)
+#### Similarity of Sequential Patterns (S2MP)
 
 Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
 
@@ -63,7 +65,7 @@ In market basket analysis or web usage mining, a sequence of purchase transactio
 
 ---
 
-### Clustering of Sequential Patterns (SKMeans)
+#### Clustering of Sequential Patterns (S-KMeans)
 
 Clustering of sequential data or patterns becomes more and more relevant for business applications. `SKMeans` is a modified version of Apache Spark's KMeans algorithm and is optimized for clustering sequential patterns based on the `S2MP` similarity measure. 
 
