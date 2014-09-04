@@ -23,6 +23,21 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read,write}
 
+case class FSMParameters(
+  /*
+   * Number of rules used by the TSR algorithm
+   */
+  k:Option[Int],
+  /*
+   * Minimum confidence used by the TSR algorithm
+   */
+  minconf:Option[Double],
+  /*
+   * Support used by the SPADE algorithm
+   */
+  support:Option[Double]    
+)
+
 case class FSMRequest(
   /* 
    * Unique identifier to distinguish requests from each other;
@@ -41,7 +56,15 @@ case class FSMRequest(
    * The algorithm to be used when starting a specific mining job;
    * actually two different algorithms are supported: SPADE & TSR
    */
-  algorithm:Option[String]
+  algorithm:Option[String],
+  /*
+   * The parameters either for the SPADE or TSR algorithm
+   */
+  parameters:Option[FSMParameters],
+  /*
+   * Specification of the data source used by the algorithms
+   */
+  source:Option[FSMSource]  
 )
 
 case class FSMResponse(
@@ -69,6 +92,14 @@ case class FSMResponse(
    * Return status
    */
   status:String
+)
+
+case class FSMSource(
+  /*
+   * The path to a file on the HDFS or local file system
+   * that holds a textual description of a sequence database
+   */
+  path:Option[String]
 )
 
 case class ElasticRequest()
