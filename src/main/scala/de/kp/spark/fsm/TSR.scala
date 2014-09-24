@@ -32,18 +32,16 @@ import scala.collection.mutable.ArrayBuffer
 import de.kp.spark.fsm.source.FileSource
 import de.kp.core.tsr.{Rule,Sequence,TSRAlgorithm,Vertical}
 
-object TSR {
+object TSR extends Serializable {
   
-  def extractFileRules(sc:SparkContext,input:String, k:Int, minconf:Double):List[Rule] = {
+  def extractFileRules(@transient sc:SparkContext,k:Int, minconf:Double):List[Rule] = {
     
-    val fileSource = new FileSource(sc)
-    val dataset = fileSource.connect(input)
-    
+    val dataset = new FileSource(sc).connect()
     extractRDDRules(dataset,k,minconf)
     
   }
   
-  def extractRDDRules(dataset:RDD[(Int,Array[String])],k:Int, minconf:Double):List[Rule] = {
+  def extractRDDRules(dataset:RDD[(Int,String)],k:Int, minconf:Double):List[Rule] = {
               
     val sc = dataset.context
     
@@ -53,7 +51,7 @@ object TSR {
      * Determine max & min item; note, that we have to make sure,
      * that ctrl integer, i.e. -1 and -2 are not taken into account
      */
-    val ids = dataset.flatMap(value => value._2.map(item => Integer.parseInt(item))).filter(valu => valu > -1).collect()
+    val ids = dataset.flatMap(data => data._2.split(" ").map(_.toInt).filter(v => v > -1).toList.distinct).collect()
     
     val max = sc.broadcast(ids.max)
     val min = sc.broadcast(ids.min)
@@ -121,24 +119,25 @@ object TSR {
     
   }
   
-  private def newSequence(sid:Int, items:Array[String]):Sequence = {
+  private def newSequence(sid:Int,seq:String):Sequence = {
           
-    val seq = new Sequence(sid)
+    val items = seq.split(" ")
+    val sequence = new Sequence(sid)
       
     var itemset = ArrayBuffer.empty[java.lang.Integer]
     for (item <- items) {
-  	  /** 
+  	  /*
 	   * If the token is -1, it means that we reached the end of an itemset.
 	   */
       if (item == "-1") { 
-		/** 
+		/*
 		 * Add the current itemset to the sequence
 	     */
-        seq.addItemset(itemset.toArray)
+        sequence.addItemset(itemset.toArray)
 	    itemset = ArrayBuffer.empty[java.lang.Integer]
 		
       }
-	  /** 
+	  /*
 	   * If the token is -2, it means that we reached the end of 
 	   * the sequence
 	   */
@@ -152,7 +151,7 @@ object TSR {
       
     }
 
-    seq
+    sequence
     
   }
   

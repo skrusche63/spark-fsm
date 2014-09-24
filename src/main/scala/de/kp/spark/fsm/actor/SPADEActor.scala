@@ -62,11 +62,9 @@ class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
 
         try {
           
-          val conf = Configuration.elastic
-          
           /* Retrieve data from Elasticsearch */    
           val source = new ElasticSource(sc)
-          val dataset = source.items(conf)
+          val dataset = source.connect()
 
           JobCache.add(uid,FSMStatus.DATASET)
           
@@ -104,7 +102,7 @@ class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
           val source = new FileSource(sc)
           
           val path = req.path
-          val dataset = source.connect(path)
+          val dataset = source.connect()
 
           JobCache.add(uid,FSMStatus.DATASET)
 
@@ -126,7 +124,7 @@ class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
     
   }
   
-  private def findPatterns(dataset:RDD[(Int,Array[String])],support:Double) {
+  private def findPatterns(dataset:RDD[(Int,String)],support:Double) {
      
     val patterns = SPADE.extractRDDPatterns(dataset,support).map(pattern => {
       

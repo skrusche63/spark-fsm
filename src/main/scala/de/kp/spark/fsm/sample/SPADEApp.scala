@@ -47,7 +47,7 @@ object SPADEApp extends SparkApp {
     val support = 0.66 //0.00085
     
     val dfs = true
-    val patterns = SPADE.extractFilePatterns(sc, output, support, dfs)    
+    val patterns = SPADE.extractFilePatterns(sc, support, dfs)    
  
     /**
      * Serialize pattern

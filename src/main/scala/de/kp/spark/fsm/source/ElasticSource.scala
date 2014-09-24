@@ -26,52 +26,74 @@ import org.apache.hadoop.io.{ArrayWritable,MapWritable,NullWritable,Text}
 
 import org.elasticsearch.hadoop.mr.EsInputFormat
 
+import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.spec.FieldSpec
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
-class ElasticSource(sc:SparkContext) extends Serializable {
+class ElasticSource(@transient sc:SparkContext) extends Source(sc) {
  
+  val conf = Configuration.elastic
+  
   /**
    * Load ecommerce items that refer to a certain site (tenant), user
    * and transaction or order
    */
-  def items(conf:HConf):RDD[(Int,Array[String])] = {
+  override def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[(Int,String)] = {
      
     val spec = sc.broadcast(FieldSpec.get)
 
     /* Connect to Elasticsearch */
     val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
-    val dataset = source.map(hit => toMap(hit._2))
+    val rawset = source.map(hit => toMap(hit._2))
 
-    val items = dataset.map(data => {
+    val dataset = rawset.map(data => {
       
       val site = data(spec.value("site")._1)
       val timestamp = data(spec.value("timestamp")._1).toLong
 
       val user = data(spec.value("user")._1)      
-      val order = data(spec.value("order")._1)
+      val group = data(spec.value("group")._1)
 
       val item  = data(spec.value("item")._1)
       
-      (site,user,order,timestamp,item)
+      (site,user,group,timestamp,item)
       
     })
     /*
-     * Group items by 'order' and aggregate all items of a single order
-     * into a single line and repartition ids to single partition
+     * Group dataset by site & user and aggregate all items of a
+     * certain group and all groups into a time-ordered sequence
+     * representation that is compatible to the SPMF format.
      */
-    val ids = items.groupBy(_._3).map(valu => {
+    val sequences = dataset.groupBy(v => (v._1,v._2)).map(data => {
       
-      /* Sort grouped orders by (ascending) timestamp */
-      val data = valu._2.toList.sortBy(_._4)      
-      data.map(record => record._5).toArray
-       
+      /*
+       * Aggregate all items of a certain group onto a single
+       * line thereby sorting these items in ascending order.
+       * 
+       * And then, sort these items by timestamp in ascending
+       * order.
+       */
+      val groups = data._2.groupBy(_._3).map(group => {
+
+        val timestamp = group._2.head._4
+        val items = group._2.map(_._5.toInt).toList.distinct.sorted.mkString(" ")
+
+        (timestamp,items)
+        
+      }).toList.sortBy(_._1)
+      
+      /*
+       * Finally aggregate all sorted item groups (or sets) in a single
+       * line and use SPMF format
+       */
+      groups.map(_._2).mkString(" -1 ") + " -2"
+      
     }).coalesce(1)
 
-    val index = sc.parallelize(Range.Long(0,ids.count,1),ids.partitions.size)
-    ids.zip(index).map(valu => (valu._2.toInt,valu._1)).cache()
+    val index = sc.parallelize(Range.Long(0,sequences.count,1),sequences.partitions.size)
+    sequences.zip(index).map(valu => (valu._2.toInt,valu._1)).cache()
 
   }
   

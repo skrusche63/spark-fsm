@@ -31,21 +31,19 @@ import scala.collection.mutable.{ArrayBuffer,HashMap}
 
 import scala.util.control.Breaks._
 
-object SPADE {
+object SPADE extends Serializable {
 
   private val keep = true
   private val verbose = false
 
-  def extractFilePatterns(sc:SparkContext,input:String,support:Double,dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
+  def extractFilePatterns(@transient sc:SparkContext,support:Double,dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
     
-    val fileSource = new FileSource(sc)
-    val dataset = fileSource.connect(input)
-
+    val dataset = new FileSource(sc).connect()
     extractRDDPatterns(dataset,support,dfs,stats)
     
   }
 
-  def extractRDDPatterns(dataset:RDD[(Int,Array[String])], support:Double, dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
+  def extractRDDPatterns(dataset:RDD[(Int,String)], support:Double, dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
 	
     val sc = dataset.context
     
@@ -154,8 +152,14 @@ object SPADE {
   /**
    * A private helper method to retrieve the sequence representation from the textual SPMF format
    */
-  private def newSequence(sid:Int, ids:Array[String]):Sequence = {
+  private def newSequence(sid:Int,seq:String):Sequence = {
 
+    /*
+     * 'seq' is an SPMF compliant String representation of a sequence, e.g.
+     * 1 2 -1 3 -1 4 -2 and must be split into an Array for further evaluation
+     */
+    val ids = seq.split(" ")
+    
     var timestamp:Long = -1
 
     var itemset:Itemset = new Itemset()
@@ -215,17 +219,6 @@ object SPADE {
 
     sequence
     
-  }
-    
-  private def textfile(sc:SparkContext, input:String):RDD[(Int,Array[String])] = {
-    
-    sc.textFile(input).map(valu => {
-      
-      val Array(sid,seq) = valu.split("\\|")  
-      (sid.toInt,seq.split(" "))
-    
-    })
-
   }
 
 }

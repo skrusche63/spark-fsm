@@ -46,7 +46,7 @@ object TSRApp extends SparkApp {
     val k = 25
     val minconf = 0.8
     
-    val rules = TSR.extractFileRules(sc, output, k, minconf)   
+    val rules = TSR.extractFileRules(sc, k, minconf)   
     rules.foreach(rule => {
 		
       val sb = new StringBuffer()

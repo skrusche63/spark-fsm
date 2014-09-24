@@ -59,6 +59,13 @@ object Configuration {
     conf
     
   }
+   
+  def file():String = {
+  
+    val cfg = config.getConfig("file")
+    cfg.getString("path")   
+    
+  }
   
   def router():(Int,Int,Int) = {
   

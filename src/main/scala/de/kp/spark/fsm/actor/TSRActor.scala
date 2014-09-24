@@ -64,11 +64,8 @@ class TSRActor(jobConf:JobConf) extends Actor with SparkActor {
 
         try {
           
-          val conf = Configuration.elastic
-          
           /* Retrieve data from Elasticsearch */    
-          val source = new ElasticSource(sc)
-          val dataset = source.items(conf)
+          val dataset = new ElasticSource(sc).connect()
 
           JobCache.add(uid,FSMStatus.DATASET)
           
@@ -103,10 +100,7 @@ class TSRActor(jobConf:JobConf) extends Actor with SparkActor {
         try {
     
           /* Retrieve data from the file system */
-          val source = new FileSource(sc)
-          
-          val path = req.path
-          val dataset = source.connect(path)
+          val dataset = new FileSource(sc).connect()
 
           JobCache.add(uid,FSMStatus.DATASET)
 
@@ -128,7 +122,7 @@ class TSRActor(jobConf:JobConf) extends Actor with SparkActor {
     
   }
   
-  private def findRules(dataset:RDD[(Int,Array[String])],k:Int,minconf:Double) {
+  private def findRules(dataset:RDD[(Int,String)],k:Int,minconf:Double) {
      
     val rules = TSR.extractRDDRules(dataset,k,minconf).map(rule => {
      
