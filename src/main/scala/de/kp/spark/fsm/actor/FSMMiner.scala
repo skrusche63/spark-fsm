@@ -34,55 +34,24 @@ class FSMMiner extends Actor with ActorLogging {
 
   implicit val ec = context.dispatcher
   
-  private val algorithmSupport = Array(FSMAlgorithms.SPADE,FSMAlgorithms.TSR)
+  private val algorithms = Array(Algorithms.SPADE,Algorithms.TSR)
+  private val sources = Array(Sources.ELASTIC,Sources.FILE,Sources.JDBC,Sources.PIWIK)
   
   def receive = {
 
-    case req:FSMRequest => {
+    case req:ServiceRequest => {
       
       val origin = sender    
+      val uid = req.data("uid")
       
-      val (uid,task) = (req.uid,req.task)
-      task match {
+      req.task match {
         
         case "start" => {
           
-          val algorithm  = req.algorithm.getOrElse(null)
-          val parameters = req.parameters.getOrElse(null)
-          
-          val source = req.source.getOrElse(null)
-          val response = validateStart(uid,algorithm,parameters,source) match {
+          val response = validate(req.data) match {
             
-            case None => {
-              /* Build job configuration */
-              val jobConf = new JobConf()
-                
-              jobConf.set("uid",uid)
-              jobConf.set("algorithm",algorithm)
-
-              parameters.k match {
-                case None => jobConf.set("k",10)
-                case Some(k) => jobConf.set("k",k)
-              }
-               
-              parameters.minconf match {
-                case None => jobConf.set("minconf",0.9)
-                case Some(minconf) => jobConf.set("minconf",minconf)
-              }
-               
-              parameters.support match {
-                case None => jobConf.set("support",0.5)
-                case Some(support) => jobConf.set("support",support)
-              }
-              /* Start job */
-              startJob(jobConf,source).mapTo[FSMResponse]
-              
-            }
-            
-            case Some(message) => {
-              Future {new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)} 
-              
-            }
+            case None => train(req).mapTo[ServiceResponse]            
+            case Some(message) => Future {failure(req,message)}
             
           }
 
@@ -91,8 +60,8 @@ class FSMMiner extends Actor with ActorLogging {
           }
 
           response.onFailure {
-            case message => {             
-              val resp = new FSMResponse(uid,Some(message.toString),None,None,None,FSMStatus.FAILURE)
+            case throwable => {             
+              val resp = failure(req,throwable.toString)
               origin ! FSMModel.serializeResponse(resp)	                  
             }	  
           }
@@ -100,16 +69,12 @@ class FSMMiner extends Actor with ActorLogging {
         }
        
         case "status" => {
-          /*
-           * Job MUST exist the return actual status
-           */
+
           val resp = if (JobCache.exists(uid) == false) {           
-            val message = FSMMessages.TASK_DOES_NOT_EXIST(uid)
-            new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
+            failure(req,Messages.TASK_DOES_NOT_EXIST(uid))           
             
-          } else {            
-            val status = JobCache.status(uid)
-            new FSMResponse(uid,None,None,None,None,status)
+          } else {   
+            status(req)
             
           }
            
@@ -118,12 +83,10 @@ class FSMMiner extends Actor with ActorLogging {
         }
         
         case _ => {
-          
-          val message = FSMMessages.TASK_IS_UNKNOWN(uid,task)
-          val resp = new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
            
-          origin ! FSMModel.serializeResponse(resp)
-            
+          val msg = Messages.TASK_IS_UNKNOWN(uid,req.task)
+          origin ! FSMModel.serializeResponse(failure(req,msg))
+           
         }
         
       }
@@ -134,74 +97,82 @@ class FSMMiner extends Actor with ActorLogging {
   
   }
   
-  private def startJob(jobConf:JobConf,source:FSMSource):Future[Any] = {
+  private def train(req:ServiceRequest):Future[Any] = {
 
     val duration = Configuration.actor      
     implicit val timeout:Timeout = DurationInt(duration).second
-
-    val algorithm = jobConf.get("algorithm").get.asInstanceOf[String]
-    val actor = algorithmToActor(algorithm,jobConf)
-
-    val path = source.path.getOrElse(null)
-    if (path == null) {
-
-      val req = new ElasticRequest()      
-      ask(actor, req)
-        
-    } else {
     
-      val req = new FileRequest(path)
-      ask(actor, req)
-        
-    }
+    ask(actor(req), req)
   
   }
 
-  private def validateStart(uid:String,algorithm:String,parameters:FSMParameters,source:FSMSource):Option[String] = {
-
-    if (JobCache.exists(uid)) {            
-      val message = FSMMessages.TASK_ALREADY_STARTED(uid)
-      return Some(message)
+  private def status(req:ServiceRequest):ServiceResponse = {
     
+    val uid = req.data("uid")
+    val data = Map("uid" -> uid)
+                
+    new ServiceResponse(req.service,req.task,data,JobCache.status(uid))	
+
+  }
+
+  private def validate(params:Map[String,String]):Option[String] = {
+
+    val uid = params("uid")
+    
+    if (JobCache.exists(uid)) {            
+      return Some(Messages.TASK_ALREADY_STARTED(uid))   
     }
             
-    if (algorithm == null) {   
-      val message = FSMMessages.NO_ALGORITHM_PROVIDED(uid)
-      return Some(message)
+    params.get("algorithm") match {
+        
+      case None => {
+        return Some(Messages.NO_ALGORITHM_PROVIDED(uid))              
+      }
+        
+      case Some(algorithm) => {
+        if (algorithms.contains(algorithm) == false) {
+          return Some(Messages.ALGORITHM_IS_UNKNOWN(uid,algorithm))    
+        }
+          
+      }
     
-    }
-              
-    if (algorithmSupport.contains(algorithm) == false) {
-      val message = FSMMessages.ALGORITHM_IS_UNKNOWN(uid,algorithm)
-      return Some(message)
+    }  
     
-    }
-    
-    if (parameters == null) {
-      val message = FSMMessages.NO_PARAMETERS_PROVIDED(uid)
-      return Some(message)
-      
-    }
-    
-    if (source == null) {
-      val message = FSMMessages.NO_SOURCE_PROVIDED(uid)
-      return Some(message)
- 
+    params.get("source") match {
+        
+      case None => {
+        return Some(Messages.NO_SOURCE_PROVIDED(uid))       
+      }
+        
+      case Some(source) => {
+        if (sources.contains(source) == false) {
+          return Some(Messages.SOURCE_IS_UNKNOWN(uid,source))    
+        }          
+      }
+        
     }
 
     None
     
   }
 
-  private def algorithmToActor(algorithm:String,jobConf:JobConf):ActorRef = {
+  private def actor(req:ServiceRequest):ActorRef = {
 
-    val actor = if (algorithm == FSMAlgorithms.SPADE) {      
-      context.actorOf(Props(new SPADEActor(jobConf)))      
-      } else {
-       context.actorOf(Props(new TSRActor(jobConf)))
-      }
+    val algorithm = req.data("algorithm")
+    if (algorithm == Algorithms.SPADE) {      
+      context.actorOf(Props(new SPADEActor()))      
+      
+    } else {
+       context.actorOf(Props(new TSRActor()))
     
-    actor
+    }
+    
+  }
+
+  private def failure(req:ServiceRequest,message:String):ServiceResponse = {
+    
+    val data = Map("uid" -> req.data("uid"), "message" -> message)
+    new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
     
   }
 

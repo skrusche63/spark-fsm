@@ -25,6 +25,20 @@ import org.json4s.native.Serialization.write
 
 trait RuleJSON {}
 
+case class FSMPattern(
+  /*
+   * Describes the # of appearances in the set of evaluated sequences
+   */    
+  support:Int,
+  itemsets:List[List[Int]]
+) extends RuleJSON {
+  
+  implicit val formats = Serialization.formats(ShortTypeHints(List()))
+  
+  def toJSON:String = write(this)
+  
+}
+
 case class FSMRule (
   /*
    * Antecedent itemset

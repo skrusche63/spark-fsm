@@ -21,7 +21,6 @@ package de.kp.spark.fsm.actor
 import akka.actor.Actor
 
 import org.apache.spark.rdd.RDD
-import org.apache.hadoop.conf.{Configuration => HConf}
 
 import de.kp.spark.fsm.{Configuration,FSMPattern,SPADE}
 import de.kp.spark.fsm.source.{ElasticSource,FileSource}
@@ -29,102 +28,84 @@ import de.kp.spark.fsm.source.{ElasticSource,FileSource}
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.util.{JobCache,PatternCache}
 
-class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
+class SPADEActor extends Actor with SparkActor {
   
   /* Create Spark context */
   private val sc = createCtxLocal("SPADEActor",Configuration.spark)      
-  
-  private val uid = jobConf.get("uid").get.asInstanceOf[String]     
-  JobCache.add(uid,FSMStatus.STARTED)
-
-  private val params = parameters()
-
-  private val response = if (params == 0.0) {
-    val message = FSMMessages.MISSING_PARAMETERS(uid)
-    new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
-  
-  } else {
-     val message = FSMMessages.MINING_STARTED(uid)
-     new FSMResponse(uid,Some(message),None,None,None,FSMStatus.STARTED)
-    
-  }
 
   def receive = {
-    /*
-     * Retrieve Top-K sequence rules from an appropriate index from Elasticsearch
-     */     
-    case req:ElasticRequest => {
+    
+    case req:ServiceRequest => {
+
+      val uid = req.data("uid")     
+      val params = properties(req)
 
       /* Send response to originator of request */
-      sender ! response
-          
-      if (params != null) {
+      sender ! response(req, (params == 0.0))
 
+      if (params != null) {
+        /* Register status */
+        JobCache.add(uid,FSMStatus.STARTED)
+ 
         try {
           
-          /* Retrieve data from Elasticsearch */    
-          val source = new ElasticSource(sc)
-          val dataset = source.connect()
+          val source = req.data("source")
+          val dataset = source match {
+            
+            /* 
+             * Discover top k sequence rules from sequence database persisted 
+             * as an appropriate search index from Elasticsearch; the configuration
+             * parameters are retrieved from the service configuration 
+             */    
+            case Sources.ELASTIC => new ElasticSource(sc).connect()
+            /* 
+             * Discover top k sequence rules from sequence database persisted 
+             * as a file on the (HDFS) file system; the configuration parameters are 
+             * retrieved from the service configuration  
+             */    
+            case Sources.FILE => new FileSource(sc).connect()
+            /*
+             * Retrieve Top-K sequence rules from sequence database persisted 
+             * as an appropriate table from a JDBC database; the configuration parameters 
+             * are retrieved from the service configuration
+             */
+            //case Sources.JDBC => new JdbcSource(sc).connect(req.data)
+             /*
+             * Retrieve Top-K sequence rules from sequence database persisted 
+             * as an appropriate table from a Piwik database; the configuration parameters 
+             * are retrieved from the service configuration
+             */
+            //case Sources.PIWIK => new PiwikSource(sc).connect(req.data)
+            
+          }
 
           JobCache.add(uid,FSMStatus.DATASET)
           
           val support = params     
-          findPatterns(dataset,support)
+          findPatterns(uid,dataset,support)
 
         } catch {
           case e:Exception => JobCache.add(uid,FSMStatus.FAILURE)          
         }
-      
+ 
+
       }
+      
+      sc.stop
+      context.stop(self)
+          
+    }
+    
+    case _ => {
       
       sc.stop
       context.stop(self)
       
     }
-    
-    /*
-     * Retrieve Top-K sequence rules from an appropriate file from the
-     * (HDFS) file system; the file MUST have a specific file format;
-     * 
-     * actually it MUST be ensured by the client application that such
-     * a file exists in the right format
-     */
-    case req:FileRequest => {
-
-      /* Send response to originator of request */
-      sender ! response
-          
-      if (params != null) {
-
-        try {
-    
-          /* Retrieve data from the file system */
-          val source = new FileSource(sc)
-          
-          val path = req.path
-          val dataset = source.connect()
-
-          JobCache.add(uid,FSMStatus.DATASET)
-
-          val support = params          
-          findPatterns(dataset,support)
-
-        } catch {
-          case e:Exception => JobCache.add(uid,FSMStatus.FAILURE)
-        }
-        
-      }
-      
-      sc.stop
-      context.stop(self)
-      
-    }
-    
-    case _ => {}
     
   }
   
-  private def findPatterns(dataset:RDD[(Int,String)],support:Double) {
+  private def findPatterns(uid:String,dataset:RDD[(Int,String)],support:Double) {
      
     val patterns = SPADE.extractRDDPatterns(dataset,support).map(pattern => {
       
@@ -147,10 +128,12 @@ class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
 
   }  
   
-  private def parameters():Double = {
+  private def properties(req:ServiceRequest):Double = {
       
     try {
-      return jobConf.get("support").get.asInstanceOf[Double]
+   
+      val support = req.data("support").toDouble        
+      return support
         
     } catch {
       case e:Exception => {
@@ -159,4 +142,21 @@ class SPADEActor(jobConf:JobConf) extends Actor with SparkActor {
     }
     
   }
+  
+  private def response(req:ServiceRequest,missing:Boolean):ServiceResponse = {
+    
+    val uid = req.data("uid")
+    
+    if (missing == true) {
+      val data = Map("uid" -> uid, "message" -> Messages.MISSING_PARAMETERS(uid))
+      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+  
+    } else {
+      val data = Map("uid" -> uid, "message" -> Messages.MINING_STARTED(uid))
+      new ServiceResponse(req.service,req.task,data,FSMStatus.STARTED)	
+  
+    }
+
+  }
+  
 }

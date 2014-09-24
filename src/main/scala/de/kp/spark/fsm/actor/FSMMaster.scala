@@ -56,23 +56,20 @@ class FSMMaster extends Actor with ActorLogging {
 	  val origin = sender
 
 	  val deser = FSMModel.deserializeRequest(req)
-	  val (uid,task) = (deser.uid,deser.task)
-
 	  val response = deser.task match {
         
-        case "start" => ask(miner,deser).mapTo[FSMResponse]
-        case "status" => ask(miner,deser).mapTo[FSMResponse]
+        case "train"  => ask(miner,deser).mapTo[ServiceResponse]
+        case "status" => ask(miner,deser).mapTo[ServiceResponse]
         
-        case "rules" => ask(questor,deser).mapTo[FSMResponse]
-        case "patterns" => ask(questor,deser).mapTo[FSMResponse]
+        case "rules" => ask(questor,deser).mapTo[ServiceResponse]
+        case "patterns" => ask(questor,deser).mapTo[ServiceResponse]
 
-        case "predict" => ask(questor,deser).mapTo[FSMResponse]
+        case "predict" => ask(questor,deser).mapTo[ServiceResponse]
        
         case _ => {
 
           Future {          
-            val message = FSMMessages.TASK_IS_UNKNOWN(uid,task)
-            new FSMResponse(uid,Some(message),None,None,None,FSMStatus.FAILURE)
+            failure(deser,Messages.TASK_IS_UNKNOWN(deser.data("uid"),deser.task))
           } 
           
         }
@@ -91,4 +88,10 @@ class FSMMaster extends Actor with ActorLogging {
     
   }
 
+  private def failure(req:ServiceRequest,message:String):ServiceResponse = {
+    
+    val data = Map("uid" -> req.data("uid"), "message" -> message)
+    new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+    
+  }
 }

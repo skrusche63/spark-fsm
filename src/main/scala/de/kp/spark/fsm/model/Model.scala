@@ -25,6 +25,13 @@ import org.json4s.native.Serialization.{read,write}
 
 import de.kp.spark.fsm.{FSMPattern,FSMRule}
 
+case class ServiceRequest(
+  service:String,task:String,data:Map[String,String]
+)
+case class ServiceResponse(
+  service:String,task:String,data:Map[String,String],status:String
+)
+
 case class FSMParameters(
   /*
    * Number of rules used by the TSR algorithm
@@ -119,24 +126,39 @@ object FSMModel {
     
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  def serializeResponse(response:FSMResponse):String = write(response)
+  def serializeResponse(response:ServiceResponse):String = write(response)
   
-  def deserializeRequest(request:String):FSMRequest = read[FSMRequest](request)
+  def deserializeRequest(request:String):ServiceRequest = read[ServiceRequest](request)
   
 }
 
-object FSMAlgorithms {
+object Algorithms {
   
   val SPADE:String = "SPADE"
   val TSR:String   = "TSR"
   
 }
 
-object FSMMessages {
+object Sources {
+  /* The names of the data source actually supported */
+  val FILE:String    = "FILE"
+  val ELASTIC:String = "ELASTIC" 
+  val JDBC:String    = "JDBC"    
+  val PIWIK:String   = "PIWIK"    
+}
 
-  def ANTECEDENTS_DO_NOT_EXIST(uid:String):String = String.format("""No antecedents found for uid '%s'.""", uid)
+object Messages {
 
   def ALGORITHM_IS_UNKNOWN(uid:String,algorithm:String):String = String.format("""Algorithm '%s' is unknown for uid '%s'.""", algorithm, uid)
+
+  /*
+   * Predict request have to provide either antecedents or consequents 
+   * that will be used as match criteria against discovered rules
+   */
+  def NO_ANTECEDENTS_OR_CONSEQUENTS_PROVIDED(uid:String):String = 
+    String.format("""
+      No antecedents or consequents are provided for uid '%s'.
+    """.stripMargin, uid)
 
   def MINING_STARTED(uid:String) = String.format("""Mining started for uid '%s'.""", uid)
   
@@ -157,6 +179,8 @@ object FSMMessages {
   def TASK_DOES_NOT_EXIST(uid:String):String = String.format("""The task with uid '%s' does not exist.""", uid)
 
   def TASK_IS_UNKNOWN(uid:String,task:String):String = String.format("""The task '%s' is unknown for uid '%s'.""", task, uid)
+
+  def SOURCE_IS_UNKNOWN(uid:String,source:String):String = String.format("""Source '%s' is unknown for uid '%s'.""", source, uid)
   
 }
 
