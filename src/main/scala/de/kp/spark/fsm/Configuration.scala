@@ -36,15 +36,6 @@ object Configuration {
     
   }
 
-  def cache():Int = {
-  
-    val cfg = config.getConfig("cache")
-    val maxentries = cfg.getInt("maxentries")
-    
-    maxentries
-    
-  }
-
   def elastic():HConf = {
   
     val cfg = config.getConfig("elastic")
@@ -64,6 +55,17 @@ object Configuration {
   
     val cfg = config.getConfig("file")
     cfg.getString("path")   
+    
+  }
+  
+  def redis():(String,String) = {
+  
+    val cfg = config.getConfig("redis")
+    
+    val host = cfg.getString("host")
+    val port = cfg.getString("port")
+    
+    (host,port)
     
   }
   

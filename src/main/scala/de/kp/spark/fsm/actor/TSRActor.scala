@@ -21,13 +21,12 @@ package de.kp.spark.fsm.actor
 import akka.actor.Actor
 
 import org.apache.spark.rdd.RDD
-import org.apache.hadoop.conf.{Configuration => HConf}
 
-import de.kp.spark.fsm.{Configuration,FSMRule,TSR}
-import de.kp.spark.fsm.source.{ElasticSource,FileSource}
+import de.kp.spark.fsm.{Configuration,TSR}
+import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.util.{JobCache,RuleCache}
+import de.kp.spark.fsm.redis.RedisCache
 
 import scala.collection.JavaConversions._
 
@@ -41,6 +40,8 @@ class TSRActor extends Actor with SparkActor {
     case req:ServiceRequest => {
 
       val uid = req.data("uid")     
+      val task = req.task
+
       val params = properties(req)
 
       /* Send response to originator of request */
@@ -48,47 +49,19 @@ class TSRActor extends Actor with SparkActor {
 
       if (params != null) {
         /* Register status */
-        JobCache.add(uid,FSMStatus.STARTED)
+        RedisCache.addStatus(uid,task,FSMStatus.STARTED)
  
         try {
           
-          val source = req.data("source")
-          val dataset = source match {
-            
-            /* 
-             * Discover top k sequence rules from sequence database persisted 
-             * as an appropriate search index from Elasticsearch; the configuration
-             * parameters are retrieved from the service configuration 
-             */    
-            case Sources.ELASTIC => new ElasticSource(sc).connect()
-            /* 
-             * Discover top k sequence rules from sequence database persisted 
-             * as a file on the (HDFS) file system; the configuration parameters are 
-             * retrieved from the service configuration  
-             */    
-            case Sources.FILE => new FileSource(sc).connect()
-            /*
-             * Retrieve Top-K sequence rules from sequence database persisted 
-             * as an appropriate table from a JDBC database; the configuration parameters 
-             * are retrieved from the service configuration
-             */
-            //case Sources.JDBC => new JdbcSource(sc).connect(req.data)
-             /*
-             * Retrieve Top-K sequence rules from sequence database persisted 
-             * as an appropriate table from a Piwik database; the configuration parameters 
-             * are retrieved from the service configuration
-             */
-            //case Sources.PIWIK => new PiwikSource(sc).connect(req.data)
-            
-          }
+          val dataset = new SequenceSource(sc).get(req.data)
 
-          JobCache.add(uid,FSMStatus.DATASET)
+          RedisCache.addStatus(uid,task,FSMStatus.DATASET)
           
           val (k,minconf) = params     
-          findRules(uid,dataset,k,minconf)
+          findRules(uid,task,dataset,k,minconf)
 
         } catch {
-          case e:Exception => JobCache.add(uid,FSMStatus.FAILURE)          
+          case e:Exception => RedisCache.addStatus(uid,task,FSMStatus.FAILURE)          
         }
  
 
@@ -108,7 +81,7 @@ class TSRActor extends Actor with SparkActor {
     
   }
   
-  private def findRules(uid:String,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
+  private def findRules(uid:String,task:String,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
      
     val rules = TSR.extractRDDRules(dataset,k,minconf).map(rule => {
      
@@ -122,11 +95,11 @@ class TSRActor extends Actor with SparkActor {
             
     })
           
-    /* Put rules to RuleCache */
-    RuleCache.add(uid,rules)
+    /* Put rules to cache */
+    RedisCache.addRules(uid,new FSMRules(rules))
           
-    /* Update JobCache */
-    JobCache.add(uid,FSMStatus.FINISHED)
+    /* Update status */
+    RedisCache.addStatus(uid,task,FSMStatus.FINISHED)
 
   }  
   

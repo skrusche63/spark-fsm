@@ -23,8 +23,6 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read,write}
 
-import de.kp.spark.fsm.{FSMPattern,FSMRule}
-
 case class ServiceRequest(
   service:String,task:String,data:Map[String,String]
 )
@@ -32,103 +30,52 @@ case class ServiceResponse(
   service:String,task:String,data:Map[String,String],status:String
 )
 
-case class FSMParameters(
-  /*
-   * Number of rules used by the TSR algorithm
-   */
-  k:Option[Int],
-  /*
-   * Minimum confidence used by the TSR algorithm
-   */
-  minconf:Option[Double],
-  /*
-   * Support used by the SPADE algorithm
-   */
-  support:Option[Double]    
+/*
+ * Service requests are mapped onto job descriptions and are stored
+ * in a Redis instance
+ */
+case class JobDesc(
+  service:String,task:String,status:String
 )
 
-case class FSMRequest(
-  /* 
-   * Unique identifier to distinguish requests from each other;
-   * the request is responsible for setting appropriate identifiers
-   */
-  uid:String,
-  /*
-   * The task of the request: for mining requests, two different task 
-   * are supported:
-   * 
-   * a) start:   start a specific mining job
-   * b) status:  get actual status of mining job
-   */
-  task:String,
-  /*
-   * The algorithm to be used when starting a specific mining job;
-   * actually two different algorithms are supported: SPADE & TSR
-   */
-  algorithm:Option[String],
-  /*
-   * The parameters either for the SPADE or TSR algorithm
-   */
-  parameters:Option[FSMParameters],
-  /*
-   * The itemset (antecedent) for which a consequent needs to be predicted
-   */
-  itemset:Option[List[Int]],
-  /*
-   * Specification of the data source used by the algorithms
-   */
-  source:Option[FSMSource]  
-)
+case class FSMPattern(
+  support:Int,itemsets:List[List[Int]])
 
-case class FSMResponse(
-  /*
-   * Unique identifier of the request, this response belongs to
-   */
-  uid:String,
-  /*
-   * Message
-   */
-  message:Option[String],
-  /*
-   * Patterns returned from SPADE
-   */
-  patterns:Option[List[FSMPattern]],
-  /*
-   * Rules returned from TSR
-   */
-  rules:Option[List[FSMRule]],
-  /*
-   * Predictions returned from TSR
-   */
-  predictions:Option[List[Int]],
-  /*
-   * Return status
-   */
-  status:String
-)
+case class FSMPatterns(items:List[FSMPattern])
+  
 
-case class FSMSource(
-  /*
-   * The path to a file on the HDFS or local file system
-   * that holds a textual description of a sequence database
-   */
-  path:Option[String]
-)
+case class FSMRule (
+  antecedent:List[Int],consequent:List[Int],support:Int,confidence:Double)
 
-case class ElasticRequest()
+case class FSMRules(items:List[FSMRule])
 
-case class FileRequest(
-  path:String
-)
-
-
-object FSMModel {
+object Serializer {
     
   implicit val formats = Serialization.formats(NoTypeHints)
+
+  /*
+   * Support for serialization and deserialization of job descriptions
+   */
+  def serializeJob(job:JobDesc):String = write(job)
+
+  def deserializeJob(job:String):JobDesc = read[JobDesc](job)
+  /*
+   * Support for serialization and deserialization of patterns
+   */
+  def serializePatterns(patterns:FSMPatterns):String = write(patterns)
+  
+  def deserializePatterns(patterns:String):FSMPatterns = read[FSMPatterns](patterns)
 
   def serializeResponse(response:ServiceResponse):String = write(response)
   
   def deserializeRequest(request:String):ServiceRequest = read[ServiceRequest](request)
+  
+  /*
+   * Support for serialization and deserialization of rules
+   */
+  def serializeRules(rules:FSMRules):String = write(rules)
+  
+  def deserializeRules(rules:String):FSMRules = read[FSMRules](rules)
   
 }
 

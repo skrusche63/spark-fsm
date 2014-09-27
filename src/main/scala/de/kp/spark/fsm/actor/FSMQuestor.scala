@@ -21,7 +21,7 @@ package de.kp.spark.fsm.actor
 import akka.actor.{Actor,ActorLogging}
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.util.{PatternCache,RuleCache}
+import de.kp.spark.fsm.redis.RedisCache
 
 class FSMQuestor extends Actor with ActorLogging {
 
@@ -36,9 +36,9 @@ class FSMQuestor extends Actor with ActorLogging {
       
       req.task match {
         
-        case "predict" => {
+        case "get:associated" => {
 
-          val resp = if (RuleCache.exists(uid) == false) {           
+          val resp = if (RedisCache.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
@@ -53,13 +53,13 @@ class FSMQuestor extends Actor with ActorLogging {
 
                val rules = (if (antecedent != null) {
                  val items = antecedent.split(",").map(_.toInt).toList
-                 RuleCache.rulesByAntecedent(uid,items)
+                 RedisCache.rulesByAntecedent(uid,items)
                
                } else {
                  val items = consequent.split(",").map(_.toInt).toList
-                 RuleCache.rulesByConsequent(uid,items)
+                 RedisCache.rulesByConsequent(uid,items)
                  
-               }).map(rule => rule.toJSON).mkString(",")
+               })
                
                val data = Map("uid" -> uid, "rules" -> rules)
                new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
@@ -68,41 +68,42 @@ class FSMQuestor extends Actor with ActorLogging {
             
           }
            
-          origin ! FSMModel.serializeResponse(resp)
+          origin ! Serializer.serializeResponse(resp)
         }
 
-        case "patterns" => {
+        case "get:pattern" => {
 
-          val resp = if (PatternCache.exists(uid) == false) {           
+          val resp = if (RedisCache.patternsExist(uid) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
             
           } else {            
-            val patterns = PatternCache.patterns(uid).map(pattern => pattern.toJSON).mkString(",")
+            
+            val patterns = RedisCache.patterns(uid)
                
             val data = Map("uid" -> uid, "patterns" -> patterns)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
             
           }
            
-          origin ! FSMModel.serializeResponse(resp)
+          origin ! Serializer.serializeResponse(resp)
           
         }
         
-        case "rules" => {
+        case "get:rule" => {
           
-          val resp = if (RuleCache.exists(uid) == false) {           
+          val resp = if (RedisCache.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {            
             
-            val rules = RuleCache.rules(uid).map(rule => rule.toJSON).mkString(",")
+            val rules = RedisCache.rules(uid)
                
             val data = Map("uid" -> uid, "rules" -> rules)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
             
           }
            
-          origin ! FSMModel.serializeResponse(resp)
+          origin ! Serializer.serializeResponse(resp)
            
         }
         

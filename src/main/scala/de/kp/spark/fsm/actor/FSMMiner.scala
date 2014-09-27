@@ -25,7 +25,7 @@ import akka.util.Timeout
 import de.kp.spark.fsm.Configuration
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.util.JobCache
+import de.kp.spark.fsm.redis.RedisCache
 
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
@@ -56,13 +56,13 @@ class FSMMiner extends Actor with ActorLogging {
           }
 
           response.onSuccess {
-            case result => origin ! FSMModel.serializeResponse(result)
+            case result => origin ! Serializer.serializeResponse(result)
           }
 
           response.onFailure {
             case throwable => {             
               val resp = failure(req,throwable.toString)
-              origin ! FSMModel.serializeResponse(resp)	                  
+              origin ! Serializer.serializeResponse(resp)	                  
             }	  
           }
          
@@ -70,7 +70,7 @@ class FSMMiner extends Actor with ActorLogging {
        
         case "status" => {
 
-          val resp = if (JobCache.exists(uid) == false) {           
+          val resp = if (RedisCache.taskExists(uid) == false) {           
             failure(req,Messages.TASK_DOES_NOT_EXIST(uid))           
             
           } else {   
@@ -78,14 +78,14 @@ class FSMMiner extends Actor with ActorLogging {
             
           }
            
-          origin ! FSMModel.serializeResponse(resp)
+          origin ! Serializer.serializeResponse(resp)
            
         }
         
         case _ => {
            
           val msg = Messages.TASK_IS_UNKNOWN(uid,req.task)
-          origin ! FSMModel.serializeResponse(failure(req,msg))
+          origin ! Serializer.serializeResponse(failure(req,msg))
            
         }
         
@@ -111,7 +111,7 @@ class FSMMiner extends Actor with ActorLogging {
     val uid = req.data("uid")
     val data = Map("uid" -> uid)
                 
-    new ServiceResponse(req.service,req.task,data,JobCache.status(uid))	
+    new ServiceResponse(req.service,req.task,data,RedisCache.status(uid))	
 
   }
 
@@ -119,7 +119,7 @@ class FSMMiner extends Actor with ActorLogging {
 
     val uid = params("uid")
     
-    if (JobCache.exists(uid)) {            
+    if (RedisCache.taskExists(uid)) {            
       return Some(Messages.TASK_ALREADY_STARTED(uid))   
     }
             

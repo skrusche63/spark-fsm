@@ -36,11 +36,10 @@ class ElasticSource(@transient sc:SparkContext) extends Source(sc) {
  
   val conf = Configuration.elastic
   
-  /**
-   * Load ecommerce items that refer to a certain site (tenant), user
-   * and transaction or order
-   */
   override def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[(Int,String)] = {
+    
+    val query = params("query").asInstanceOf[String]
+    val resource = params("resource").asInstanceOf[String]
      
     val spec = sc.broadcast(FieldSpec.get)
 

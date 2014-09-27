@@ -20,6 +20,8 @@
     <encoding>UTF-8</encoding>
     <scala.tools.version>2.10</scala.tools.version>
     <scala.version>2.10.0</scala.version>
+    
+    <spark.version>1.1.0</spark.version>
   </properties>
 
   <dependencies>
@@ -49,11 +51,11 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- spark 1.0.2 -->
+    <!-- spark 1.1.0 -->
     <dependency>
 	  <groupId>org.apache.spark</groupId>
 	  <artifactId>spark-core_2.10</artifactId>
-	  <version>1.0.2</version>
+	  <version>${spark.version}</version>
 	  <exclusions>
 	    <!-- 
 	    Apache Sparks uses an elder version of jackson-mapper-asl (1.01), which
@@ -66,11 +68,11 @@
 	  </exclusions>
     </dependency>
     
-     <!-- spark mllib 1.0.2 -->
+     <!-- spark mllib 1.1.0 -->
     <dependency>
 	  <groupId>org.apache.spark</groupId>
 	  <artifactId>spark-mllib_2.10</artifactId>
-	  <version>1.0.2</version>
+	  <version>${spark.version}</version>
     </dependency>
     
     <!--  cascading (from conjars.org) -->
@@ -124,6 +126,13 @@
 	  <groupId>com.typesafe.akka</groupId>
 	  <artifactId>akka-remote_2.10</artifactId>
 	  <version>2.2.3</version>
+    </dependency>
+    
+    <!-- jedis 2.5.2 -->
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>2.5.2</version>
     </dependency>
       
   </dependencies>
