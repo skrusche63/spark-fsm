@@ -46,7 +46,7 @@ class FSMMiner extends Actor with ActorLogging {
       
       req.task match {
         
-        case "start" => {
+        case "train" => {
           
           val response = validate(req.data) match {
             
