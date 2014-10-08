@@ -24,7 +24,6 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import akka.actor.{OneForOneStrategy, SupervisorStrategy}
-import akka.routing.RoundRobinRouter
 
 import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.model._
@@ -32,39 +31,37 @@ import de.kp.spark.fsm.model._
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Future
 
-class FSMMaster extends Actor with ActorLogging {
+class FSMMaster extends Actor with ActorLogging with SparkActor {
+  
+  /* Create Spark context */
+  private val sc = createCtxLocal("FSMContext",Configuration.spark)      
   
   /* Load configuration for routers */
-  val (time,retries,workers) = Configuration.router   
+  val (duration,retries,time) = Configuration.actor   
 
-  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries=retries,withinTimeRange = DurationInt(time).minutes) {
+  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries=retries,withinTimeRange = DurationInt(duration).minutes) {
     case _ : Exception => SupervisorStrategy.Restart
   }
-
-  val miner = context.actorOf(Props[FSMMiner])
-  val questor = context.actorOf(Props[FSMQuestor].withRouter(RoundRobinRouter(workers)))
   
   def receive = {
     
     case req:String => {
       
       implicit val ec = context.dispatcher
-
-      val duration = Configuration.actor      
-      implicit val timeout:Timeout = DurationInt(duration).second
+      implicit val timeout:Timeout = DurationInt(time).second
 	  	    
 	  val origin = sender
 
 	  val deser = Serializer.deserializeRequest(req)
 	  val response = deser.task match {
         
-        case "train"  => ask(miner,deser).mapTo[ServiceResponse]
-        case "status" => ask(miner,deser).mapTo[ServiceResponse]
+        case "train"  => ask(actor("miner"),deser).mapTo[ServiceResponse]
+        case "status" => ask(actor("miner"),deser).mapTo[ServiceResponse]
         
-        case "rules" => ask(questor,deser).mapTo[ServiceResponse]
-        case "patterns" => ask(questor,deser).mapTo[ServiceResponse]
+        case "rules" => ask(actor("questor"),deser).mapTo[ServiceResponse]
+        case "patterns" => ask(actor("questor"),deser).mapTo[ServiceResponse]
 
-        case "predict" => ask(questor,deser).mapTo[ServiceResponse]
+        case "predict" => ask(actor("questor"),deser).mapTo[ServiceResponse]
        
         case _ => {
 
@@ -88,10 +85,31 @@ class FSMMaster extends Actor with ActorLogging {
     
   }
 
+  private def actor(worker:String):ActorRef = {
+    
+    worker match {
+  
+      case "miner" => context.actorOf(Props(new FSMMiner(sc)))
+        
+      case "questor" => context.actorOf(Props(new FSMQuestor()))
+      
+      case _ => null
+      
+    }
+  
+  }
+
   private def failure(req:ServiceRequest,message:String):ServiceResponse = {
     
-    val data = Map("uid" -> req.data("uid"), "message" -> message)
-    new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+    if (req == null) {
+      val data = Map("message" -> message)
+      new ServiceResponse("","",data,FSMStatus.FAILURE)	
+      
+    } else {
+      val data = Map("uid" -> req.data("uid"), "message" -> message)
+      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+    
+    }
     
   }
 }

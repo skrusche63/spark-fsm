@@ -18,11 +18,12 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import akka.actor.Actor
-
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import de.kp.spark.fsm.{Configuration,TSR}
+import akka.actor.{Actor,ActorLogging}
+
+import de.kp.spark.fsm.TSR
 import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
@@ -30,10 +31,7 @@ import de.kp.spark.fsm.redis.RedisCache
 
 import scala.collection.JavaConversions._
 
-class TSRActor extends Actor with SparkActor {
-  
-  /* Create Spark context */
-  private val sc = createCtxLocal("TSRActor",Configuration.spark)      
+class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
 
   def receive = {
     
@@ -67,14 +65,13 @@ class TSRActor extends Actor with SparkActor {
 
       }
       
-      sc.stop
       context.stop(self)
           
     }
     
     case _ => {
       
-      sc.stop
+      log.error("Unknown request.")
       context.stop(self)
       
     }

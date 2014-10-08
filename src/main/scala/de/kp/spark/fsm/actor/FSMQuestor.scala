@@ -69,6 +69,8 @@ class FSMQuestor extends Actor with ActorLogging {
           }
            
           origin ! Serializer.serializeResponse(resp)
+          context.stop(self)
+          
         }
 
         case "get:pattern" => {
@@ -86,6 +88,7 @@ class FSMQuestor extends Actor with ActorLogging {
           }
            
           origin ! Serializer.serializeResponse(resp)
+          context.stop(self)
           
         }
         
@@ -104,19 +107,47 @@ class FSMQuestor extends Actor with ActorLogging {
           }
            
           origin ! Serializer.serializeResponse(resp)
-           
+          context.stop(self)
+          
+        }
+    
+        case _ => {
+      
+          val origin = sender               
+          val msg = Messages.REQUEST_IS_UNKNOWN()          
+          
+          origin ! Serializer.serializeResponse(failure(null,msg))
+          context.stop(self)
+
         }
         
       }
       
+    }
+    
+    case _ => {
+      
+      val origin = sender               
+      val msg = Messages.REQUEST_IS_UNKNOWN()          
+          
+      origin ! Serializer.serializeResponse(failure(null,msg))
+      context.stop(self)
+
     }
   
   }
 
   private def failure(req:ServiceRequest,message:String):ServiceResponse = {
     
-    val data = Map("uid" -> req.data("uid"), "message" -> message)
-    new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+    if (req == null) {
+      val data = Map("message" -> message)
+      new ServiceResponse("","",data,FSMStatus.FAILURE)	
+      
+    } else {
+      val data = Map("uid" -> req.data("uid"), "message" -> message)
+      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+    
+    }
     
   }
   

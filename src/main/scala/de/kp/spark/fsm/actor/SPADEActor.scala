@@ -18,9 +18,10 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import akka.actor.Actor
-
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+
+import akka.actor.{Actor,ActorLogging}
 
 import de.kp.spark.fsm.{Configuration,SPADE}
 import de.kp.spark.fsm.source.SequenceSource
@@ -28,10 +29,7 @@ import de.kp.spark.fsm.source.SequenceSource
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.redis.RedisCache
 
-class SPADEActor extends Actor with SparkActor {
-  
-  /* Create Spark context */
-  private val sc = createCtxLocal("SPADEActor",Configuration.spark)      
+class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
 
   def receive = {
     
@@ -65,14 +63,13 @@ class SPADEActor extends Actor with SparkActor {
 
       }
       
-      sc.stop
       context.stop(self)
           
     }
     
     case _ => {
       
-      sc.stop
+      log.error("Unknown request.")
       context.stop(self)
       
     }

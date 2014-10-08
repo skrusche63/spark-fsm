@@ -119,6 +119,8 @@ object Messages {
 
   def PATTERNS_DO_NOT_EXIST(uid:String):String = String.format("""The patterns for uid '%s' do not exist.""", uid)
 
+  def REQUEST_IS_UNKNOWN():String = String.format("""Unknown request.""")
+
   def RULES_DO_NOT_EXIST(uid:String):String = String.format("""The rules for uid '%s' do not exist.""", uid)
 
   def TASK_ALREADY_STARTED(uid:String):String = String.format("""The task with uid '%s' is already started.""", uid)
