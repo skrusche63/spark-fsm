@@ -18,6 +18,8 @@ package de.kp.spark.fsm.sim
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+import scala.language.postfixOps
+
 object CosineSimilarity {
   
   def compute(x: Array[Int], y: Array[Int]): Double = {
