@@ -17,6 +17,7 @@ package de.kp.spark.fsm.actor
 * 
 * If not, see <http://www.gnu.org/licenses/>.
 */
+import org.apache.spark.SparkContext
 
 import akka.actor.{Actor,ActorLogging,ActorRef,Props}
 
@@ -31,10 +32,7 @@ import de.kp.spark.fsm.model._
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.Future
 
-class FSMMaster extends Actor with ActorLogging with SparkActor {
-  
-  /* Create Spark context */
-  private val sc = createCtxLocal("FSMContext",Configuration.spark)      
+class FSMMaster(@transient val sc:SparkContext) extends Actor with ActorLogging {
   
   /* Load configuration for routers */
   val (duration,retries,time) = Configuration.actor   
