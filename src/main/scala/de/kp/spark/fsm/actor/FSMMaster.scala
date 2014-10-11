@@ -51,7 +51,7 @@ class FSMMaster(@transient val sc:SparkContext) extends Actor with ActorLogging 
 	  val origin = sender
 
 	  val deser = Serializer.deserializeRequest(req)
-	  val response = deser.task match {
+	  val response = deser.task.split(":")(0) match {
         
         case "train"  => ask(actor("miner"),deser).mapTo[ServiceResponse]
         case "status" => ask(actor("miner"),deser).mapTo[ServiceResponse]
