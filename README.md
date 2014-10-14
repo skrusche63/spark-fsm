@@ -1,6 +1,6 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
-### Reactive Sequential Mining Engine
+### Reactive Series Analysis Engine
 
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as 
