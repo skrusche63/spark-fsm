@@ -74,7 +74,7 @@ class FSMMaster(@transient val sc:SparkContext) extends Actor with ActorLogging 
         case result => origin ! Serializer.serializeResponse(result)
       }
       response.onFailure {
-        case result => origin ! FSMStatus.FAILURE	      
+        case result => origin ! failure(deser,Messages.GENERAL_ERROR(deser.data("uid")))	      
 	  }
       
     }

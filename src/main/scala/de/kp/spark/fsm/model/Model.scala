@@ -98,6 +98,8 @@ object Messages {
 
   def ALGORITHM_IS_UNKNOWN(uid:String,algorithm:String):String = String.format("""Algorithm '%s' is unknown for uid '%s'.""", algorithm, uid)
 
+  def GENERAL_ERROR(uid:String):String = String.format("""A general error appeared for uid '%s'.""", uid)
+
   /*
    * Predict request have to provide either antecedents or consequents 
    * that will be used as match criteria against discovered rules

@@ -173,6 +173,7 @@
       <url>http://conjars.org/repo</url>
     </repository>
   </repositories>
+
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
