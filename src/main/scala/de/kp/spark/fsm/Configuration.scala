@@ -60,6 +60,20 @@ object Configuration {
     cfg.getString("path")   
     
   }
+ 
+  def mysql():(String,String,String,String) = {
+
+   val cfg = config.getConfig("mysql")
+  
+   val url = cfg.getString("url")
+   val db  = cfg.getString("database")
+  
+   val user = cfg.getString("user")
+   val password = cfg.getString("password")
+    
+   (url,db,user,password)
+   
+  }
   
   def redis():(String,String) = {
   
