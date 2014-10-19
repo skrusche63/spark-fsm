@@ -29,14 +29,13 @@ import de.kp.spark.fsm.source.SequenceSource
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.redis.RedisCache
 
+import de.kp.spark.fsm.sink.RedisSink
+
 class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
 
   def receive = {
     
     case req:ServiceRequest => {
-
-      val uid = req.data("uid")     
-      val task = req.task
       
       val params = properties(req)
 
@@ -45,19 +44,19 @@ class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging
 
       if (params != null) {
         /* Register status */
-        RedisCache.addStatus(uid,task,FSMStatus.STARTED)
+        RedisCache.addStatus(req,FSMStatus.STARTED)
  
         try {
           
           val dataset = new SequenceSource(sc).get(req.data)
  
-          RedisCache.addStatus(uid,task,FSMStatus.DATASET)
+          RedisCache.addStatus(req,FSMStatus.DATASET)
           
           val support = params     
-          findPatterns(uid,task,dataset,support)
+          findPatterns(req,dataset,support)
 
         } catch {
-          case e:Exception => RedisCache.addStatus(uid,task,FSMStatus.FAILURE)          
+          case e:Exception => RedisCache.addStatus(req,FSMStatus.FAILURE)          
         }
  
 
@@ -76,7 +75,7 @@ class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging
     
   }
   
-  private def findPatterns(uid:String,task:String,dataset:RDD[(Int,String)],support:Double) {
+  private def findPatterns(req:ServiceRequest,dataset:RDD[(Int,String)],support:Double) {
      
     val patterns = SPADE.extractRDDPatterns(dataset,support).map(pattern => {
       
@@ -91,13 +90,19 @@ class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging
       
     }).toList
           
-    /* Put patterns to cache */
-    RedisCache.addPatterns(uid,new FSMPatterns(patterns))
+    savePatterns(req,new FSMPatterns(patterns))
           
     /* Update status */
-    RedisCache.addStatus(uid,task,FSMStatus.FINISHED)
+    RedisCache.addStatus(req,FSMStatus.FINISHED)
 
   }  
+  
+  private def savePatterns(req:ServiceRequest,patterns:FSMPatterns) {
+    
+    val sink = new RedisSink()
+    sink.addPatterns(req,patterns)
+    
+  }
   
   private def properties(req:ServiceRequest):Double = {
       

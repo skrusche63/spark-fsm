@@ -29,6 +29,8 @@ import de.kp.spark.fsm.source.SequenceSource
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.redis.RedisCache
 
+import de.kp.spark.fsm.sink.RedisSink
+
 import scala.collection.JavaConversions._
 
 class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
@@ -37,9 +39,6 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
     
     case req:ServiceRequest => {
 
-      val uid = req.data("uid")     
-      val task = req.task
-
       val params = properties(req)
 
       /* Send response to originator of request */
@@ -47,19 +46,19 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
 
       if (params != null) {
         /* Register status */
-        RedisCache.addStatus(uid,task,FSMStatus.STARTED)
+        RedisCache.addStatus(req,FSMStatus.STARTED)
  
         try {
           
           val dataset = new SequenceSource(sc).get(req.data)
 
-          RedisCache.addStatus(uid,task,FSMStatus.DATASET)
+          RedisCache.addStatus(req,FSMStatus.DATASET)
           
           val (k,minconf) = params     
-          findRules(uid,task,dataset,k,minconf)
+          findRules(req,dataset,k,minconf)
 
         } catch {
-          case e:Exception => RedisCache.addStatus(uid,task,FSMStatus.FAILURE)          
+          case e:Exception => RedisCache.addStatus(req,FSMStatus.FAILURE)          
         }
  
 
@@ -78,7 +77,7 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
     
   }
   
-  private def findRules(uid:String,task:String,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
+  private def findRules(req:ServiceRequest,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
      
     val rules = TSR.extractRDDRules(dataset,k,minconf).map(rule => {
      
@@ -92,13 +91,20 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
             
     })
           
-    /* Put rules to cache */
-    RedisCache.addRules(uid,new FSMRules(rules))
+    saveRules(req,new FSMRules(rules))
           
     /* Update status */
-    RedisCache.addStatus(uid,task,FSMStatus.FINISHED)
+    RedisCache.addStatus(req,FSMStatus.FINISHED)
 
   }  
+  
+  private def saveRules(req:ServiceRequest,rules:FSMRules) {
+    
+    val sink = new RedisSink()
+    sink.addRules(req,rules)
+    
+  }
+  
   
   private def properties(req:ServiceRequest):(Int,Double) = {
       

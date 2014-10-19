@@ -21,11 +21,12 @@ package de.kp.spark.fsm.actor
 import akka.actor.{Actor,ActorLogging}
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.redis.RedisCache
+import de.kp.spark.fsm.sink.RedisSink
 
 class FSMQuestor extends Actor with ActorLogging {
 
   implicit val ec = context.dispatcher
+  val sink = new RedisSink()
   
   def receive = {
 
@@ -38,7 +39,7 @@ class FSMQuestor extends Actor with ActorLogging {
         
         case "get:associated" => {
 
-          val resp = if (RedisCache.rulesExist(uid) == false) {           
+          val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
@@ -53,11 +54,11 @@ class FSMQuestor extends Actor with ActorLogging {
 
                val rules = (if (antecedent != null) {
                  val items = antecedent.split(",").map(_.toInt).toList
-                 RedisCache.rulesByAntecedent(uid,items)
+                 sink.rulesByAntecedent(uid,items)
                
                } else {
                  val items = consequent.split(",").map(_.toInt).toList
-                 RedisCache.rulesByConsequent(uid,items)
+                 sink.rulesByConsequent(uid,items)
                  
                })
                
@@ -75,12 +76,12 @@ class FSMQuestor extends Actor with ActorLogging {
 
         case "get:pattern" => {
 
-          val resp = if (RedisCache.patternsExist(uid) == false) {           
+          val resp = if (sink.patternsExist(uid) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
             
           } else {            
             
-            val patterns = RedisCache.patterns(uid)
+            val patterns = sink.patterns(uid)
                
             val data = Map("uid" -> uid, "patterns" -> patterns)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
@@ -94,12 +95,12 @@ class FSMQuestor extends Actor with ActorLogging {
         
         case "get:rule" => {
           
-          val resp = if (RedisCache.rulesExist(uid) == false) {           
+          val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {            
             
-            val rules = RedisCache.rules(uid)
+            val rules = sink.rules(uid)
                
             val data = Map("uid" -> uid, "rules" -> rules)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
