@@ -29,7 +29,7 @@ import de.kp.spark.fsm.source.SequenceSource
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.redis.RedisCache
 
-import de.kp.spark.fsm.sink.RedisSink
+import de.kp.spark.fsm.sink.{ElasticSink,RedisSink}
 
 import scala.collection.JavaConversions._
 
@@ -102,6 +102,9 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
     
     val sink = new RedisSink()
     sink.addRules(req,rules)
+    
+    val elastic = new ElasticSink()
+    elastic.addRules(req,rules)
     
   }
   
