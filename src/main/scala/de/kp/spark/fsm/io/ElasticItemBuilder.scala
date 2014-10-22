@@ -20,37 +20,18 @@ package de.kp.spark.fsm.io
 
 import org.elasticsearch.common.xcontent.{XContentBuilder,XContentFactory}
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.HashMap
+class ElasticItemBuilder {
 
-object ElasticBuilderFactory {
-  /*
-   * Definition of supported rule parameters
-   */
-  val TIMESTAMP_FIELD:String = "timestamp"
-
-  /*
-   * The unique identifier of the mining task that created the
-   * respective rules
-   */
-  val UID_FIELD:String = "uid"
-  
-  /*
-   * This is a relative identifier with respect to the timestamp
-   * to specify which antecendents refer to the same association
-   * rule
-   */
-  val RULE_FIELD:String = "rule"
-
-    val ANTECEDENT_FIELD:String = "antecedent"
-  val CONSEQUENT_FIELD:String = "consequent"
-
-  val SUPPORT_FIELD:String = "support"
-  val CONFIDENCE_FIELD:String = "confidence"
+  import de.kp.spark.fsm.io.ElasticBuilderFactory._
   
   def createBuilder(mapping:String):XContentBuilder = {
     /*
-     * Define mapping schema for index 'index' and 'type'
+     * Define mapping schema for index 'index' and 'type'; note, that
+     * we actually support the following common schema for rule and
+     * also series analysis: timestamp, site, user, group and item.
+     * 
+     * This schema is compliant to the actual transactional as well
+     * as sequence source in spark-arules and spark-fsm
      */
     val builder = XContentFactory.jsonBuilder()
                       .startObject()
@@ -61,37 +42,28 @@ object ElasticBuilderFactory {
                           .startObject(TIMESTAMP_FIELD)
                             .field("type", "long")
                           .endObject()
-
-                          /* uid */
-                          .startObject(UID_FIELD)
-                            .field("type", "string")
-                            .field("index", "not_analyzed")
-                          .endObject()
                     
-                          /* rule */
-                          .startObject(RULE_FIELD)
+                          /* site */
+                          .startObject(SITE_FIELD)
                             .field("type", "string")
                             .field("index", "not_analyzed")
                           .endObject()
 
-                          /* antecedent */
-                          .startObject(ANTECEDENT_FIELD)
-                            .field("type", "integer")
+                          /* user */
+                          .startObject(USER_FIELD)
+                            .field("type", "string")
+                            .field("index", "not_analyzed")
                           .endObject()//
 
-                          /* consequent */
-                          .startObject(CONSEQUENT_FIELD)
-                            .field("type", "integer")
+                          /* group */
+                          .startObject(GROUP_FIELD)
+                            .field("type", "string")
+                            .field("index", "not_analyzed")
                           .endObject()//
 
-                          /* support */
-                          .startObject(SUPPORT_FIELD)
+                          /* item */
+                          .startObject(ITEM_FIELD)
                             .field("type", "integer")
-                          .endObject()
-
-                          /* confidence */
-                          .startObject(CONFIDENCE_FIELD)
-                            .field("type", "double")
                           .endObject()
 
                         .endObject() // properties
@@ -101,5 +73,5 @@ object ElasticBuilderFactory {
     builder
 
   }
-  
+
 }

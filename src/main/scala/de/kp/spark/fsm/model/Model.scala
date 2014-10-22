@@ -132,6 +132,8 @@ object Messages {
   def TASK_IS_UNKNOWN(uid:String,task:String):String = String.format("""The task '%s' is unknown for uid '%s'.""", task, uid)
 
   def SOURCE_IS_UNKNOWN(uid:String,source:String):String = String.format("""Source '%s' is unknown for uid '%s'.""", source, uid)
+ 
+  def TRACKED_ITEM_RECEIVED(uid:String):String = String.format("""Tracked item received for uid '%s'.""", uid)
   
 }
 
