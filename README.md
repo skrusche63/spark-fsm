@@ -2,7 +2,12 @@
 
 **Predictiveworks.** is an open ensemble of predictive engines and has been made to cover a wide range of today's analytics requirements. **Predictiveworks.**  brings the power of predictive analytics to Elasticsearch.
 
-### Reactive Series Analysis Engine
+## Reactive Series Analysis Engine
+
+![Series Analysis Engine Overview](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/series-analysis-overview.png)
+
+The Series Analysis Engines is one of the nine members of the open ensemble and is built to support sequential pattern mining with a new and redefined 
+mining algorithm. The approach overcomes the well-known "threshold problem" and makes it a lot easier to directly leverage the resulting patterns and rules.
 
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as 
@@ -17,8 +22,6 @@ and more.
 
 It is an extension to the concept of association rule mining and solves the problem of discovering statistically 
 relevant patterns in big datasets that specify (timely ordered) sequences of data.
-
-![Spark-FSM](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/spark-fsm.png)
 
 #### Market Basket Analysis
 
@@ -60,25 +63,80 @@ We adapted Viger's original implementation and made his **Top-K Sequential Rules
 
 ---
 
-#### Similarity of Sequential Patterns (S2MP)
+### Akka
 
-Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    
+Akka is a toolkit to build concurrent scalable applications, using the [Actor Model](http://en.wikipedia.org/wiki/Actor_model). Akka comes with a feature called *Akka Remoting*, which easily enables to setup a communication between software components in a peer-to-peer fashion.
 
-The similarity of sequential patterns may be used to cluster, (a) the content of sequence databases to retrieve more homogeneous datasets for sequential pattern mining, or (b) to group the respective mining results. The latter approach is used for customer segmentation based on similar engagement behavior.
-
-For real-world applications, it is important to measure the similarity of more complex sequences, built from itemsets rather than single items. A customer's purchase behavior is an example of such a more complex sequence.
-
-There exist already some similarity measures such as `Edit distance` (Levenshtein, 1996) and `LCS` (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.
-
-We therefore decided to implement the `S2MP` similarity measure proposed by [Saneifar et al](http://crpit.com/confpapers/CRPITV87Saneifar.pdf), which successfully overcomes the mentioned shortcomings.
-
-From the similarity measure `sim(i,j)` of two sequences `i`and `j` it is straightforward to build the sequence engagement vector for sequence `i` with all other sequences. These vectors may then be used to build clusters with algorithms such as KMeans.
-
-In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.
+Akka and Akka Remoting are an appropriate means to establish a communication between prior independent software components - easy and fast.
 
 ---
 
-#### Clustering of Sequential Patterns (S-KMeans)
+### Spark
 
-Clustering of sequential data or patterns becomes more and more relevant for business applications. `SKMeans` is a modified version of Apache Spark's KMeans algorithm and is optimized for clustering sequential patterns based on the `S2MP` similarity measure. 
+From the [Apache Spark](https://spark.apache.org/) website:
+
+> Apache Spark is a fast and general engine for large-scale data processing and is up to 100x faster than Hadoop MR in memory.
+
+The increasing number of associated projects, such as [Spark SQL](https://spark.apache.org/sql/) and [Spark Streaming](https://spark.apache.org/streaming/), enables Spark to become the future  Unified Data Insight Platform. With this perspective in mind, we have integrated recently published Association Rule algorithms with Spark. This allows for a seamless usage of association rule mining either with batch or streaming data sources.
+
+---
+
+### Data Sources
+
+The Reactive Series Analysis Engine supports a rapidly increasing list of applicable data sources. Below is a list of data sources that are already supported or 
+will be supported in the near future:
+
+#### Elasticsearch
+
+[Elasticsearch](http://www.elasticsearch.org) is a flexible and powerful distributed real-time search and analytics engine. Besides linguistic and semantic 
+enrichment, for data in a search index there is an increasing demand to apply analytics, knowledge discovery & data mining, and even predictive analytics 
+to gain deeper insights into the data and further increase their business value.
+
+A step towards analytics is the recently introduced combination with [Logstash](http://logstash.net/) to easily store logs and other time based event data 
+from any system in a single place.
+
+The Series Analysis Engine comes with a connector to Elasticsearch and thus brings knowledge discovery and data mining to the world of indexed data. The use 
+cases are endless. 
+
+#### Piwik Analytics
+
+[Piwik Analytics](http://piwik.org) is the leading and widely used open source web analytics platform, and is an excellent starting point to move into the world 
+of dynamic catalogs, product recommendations, purchase predictions and more.
+
+#### Pimcore (coming soon)
+
+[Pimcore](http://pimcore.org) is an open source multi-channel experience and engagement management platform and contains a variety of integrated applications such 
+as Digital Asset Management, Ecommerce Framework, Marketing & Campaign Management, Multi-Channel & Web-to-Print, Product Information Management, Targeting & Personalization and
+Web Content Management.
+
+#### Relational Databases
+
+Elasticsearch is one of the connectors actually supported. As many ecommerce sites and analytics platforms work with JDBC databases, the Series Analysis Engine 
+also comes with a JDBC connector.
+
+---
+
+### Data Sinks
+
+#### Elasticsearch
+
+The Series Analysis Engine writes discovered patterns and rules to an Elasticsearch index. This ensures that these rules e.g. may directly be used for product recommendations delivered with 
+appropriate product search results.
+
+#### Redis
+
+[Redis](http://redis.io) is open source and an advanced key-value cache and store, often referred to as a distributed data structure server. The Series Analysis Engine writes discovered patterns 
+and rules to a Redis instance as a multi-purpose serving layer for software enrichments that are not equipped with Elasticsearch.
+
+---
+
+### Technology
+
+* Akka
+* Akka Remoting
+* Elasticsearch
+* Redis
+* Spark
+* Spark Streaming
+* Spray
 
