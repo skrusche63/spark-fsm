@@ -52,13 +52,15 @@ class SequenceSource (@transient sc:SparkContext) {
        * from a JDBC database; the configuration parameters are retrieved 
        * from the service configuration
        */
-      //case Sources.JDBC => new JdbcSource(sc).connect(data)
+      case Sources.JDBC => new JdbcSource(sc).connect(data)
       /*
        * Retrieve sequence database persisted as an appropriate table from 
        * a Piwik database; the configuration parameters are retrieved from 
        * the service configuration
        */
-      //case Sources.PIWIK => new PiwikSource(sc).connect(data)
+      case Sources.PIWIK => new PiwikSource(sc).connect(data)
+            
+      case _ => null
       
     }
 

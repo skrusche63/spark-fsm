@@ -21,44 +21,43 @@ package de.kp.spark.fsm.source
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import de.kp.spark.fsm.io.ElasticReader
-
 import de.kp.spark.fsm.Configuration
+import de.kp.spark.fsm.io.JdbcReader
+
 import de.kp.spark.fsm.spec.Fields
 
-class ElasticSource(@transient sc:SparkContext) extends Source(sc) {
- 
-  val conf = Configuration.elastic
+class JdbcSource(@transient sc:SparkContext) extends Source(sc) {
   
-  override def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[(Int,String)] = {
-    /*
-     * Elasticsearch is used as a data source as well as a data sink;
-     * this implies that the respective indexes and mappings have to
-     * be distinguished
-     */    
-    val index = params("source.index").asInstanceOf[String]
-    val mapping = params("source.type").asInstanceOf[String]
+  override def connect(params:Map[String,Any]):RDD[(Int,String)] = {
     
+    val uid = params("uid").asInstanceOf[String]    
+    
+    val fieldspec = Fields.get(uid)
+    val fields = fieldspec.map(kv => kv._2._1).toList    
+    /*
+     * Convert field specification into broadcast variable
+     */
+    val spec = sc.broadcast(fieldspec)
+    
+    /* Retrieve site and query from params */
+    val site = params("site").asInstanceOf[Int]
     val query = params("query").asInstanceOf[String]
- 
-    val uid = params("uid").asInstanceOf[String]
-    val spec = sc.broadcast(Fields.get(uid))
 
-    /* Connect to Elasticsearch */
-    val rawset = new ElasticReader(sc,index,mapping,query).read
+    val rawset = new JdbcReader(sc,site,query).read(fields)
     val dataset = rawset.map(data => {
       
-      val site = data(spec.value("site")._1)
-      val timestamp = data(spec.value("timestamp")._1).toLong
+      val site = data(spec.value("site")._1).asInstanceOf[String]
+      val timestamp = data(spec.value("timestamp")._1).asInstanceOf[Long]
 
-      val user = data(spec.value("user")._1)      
-      val group = data(spec.value("group")._1)
-
-      val item  = data(spec.value("item")._1)
+      val user = data(spec.value("user")._1).asInstanceOf[String] 
+      val group = data(spec.value("group")._1).asInstanceOf[String]
+      
+      val item  = data(spec.value("item")._1).asInstanceOf[Int]
       
       (site,user,group,timestamp,item)
       
     })
+    
     /*
      * Group dataset by site & user and aggregate all items of a
      * certain group and all groups into a time-ordered sequence

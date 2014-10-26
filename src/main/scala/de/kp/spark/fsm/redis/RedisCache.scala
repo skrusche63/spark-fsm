@@ -42,11 +42,34 @@ object RedisCache {
     
   }
   
+  def metaExists(uid:String):Boolean = {
+
+    val k = "meta:" + uid
+    client.exists(k)
+    
+  }
+  
   def taskExists(uid:String):Boolean = {
 
     val k = "job:" + service + ":" + uid
     client.exists(k)
     
+  }
+  
+  def meta(uid:String):String = {
+
+    val k = "meta:" + uid
+    val metas = client.zrange(k, 0, -1)
+
+    if (metas.size() == 0) {
+      null
+    
+    } else {
+      
+      metas.toList.last
+      
+    }
+
   }
   
   /**
