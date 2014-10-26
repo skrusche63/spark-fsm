@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Spark-fsm : Implementation of Frequent Sequence Mining in Scala and Apache Spark.">
+    <meta name="description" content="Series Analysis Engine : Next-Generation Sequential Pattern Mining">
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Spark-fsm</title>
+    <title>Series Analysis Engine</title>
   </head>
 
   <body>
@@ -18,8 +18,8 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/skrusche63/spark-fsm">View on GitHub</a>
 
-          <h1 id="project_title">Spark-fsm</h1>
-          <h2 id="project_tagline">Implementation of Frequent Sequence Mining in Scala and Apache Spark.</h2>
+          <h1 id="project_title">Series Analysis Engine</h1>
+          <h2 id="project_tagline">Next-Generation Sequential Pattern Mining</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/skrusche63/spark-fsm/zipball/master">Download this project as a .zip file</a>
@@ -31,10 +31,17 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <p><img src="https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png" alt="Dr.Krusche &amp; Partner PartG"></p>
+        <p><img src="https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/predictiveworks.png" alt="Elasticworks."></p>
 
-<h3>
-<a name="sequential-pattern-mining-with-spark" class="anchor" href="#sequential-pattern-mining-with-spark"><span class="octicon octicon-link"></span></a>Sequential Pattern Mining with Spark</h3>
+<p><strong>Predictiveworks.</strong> is an open ensemble of predictive engines and has been made to cover a wide range of today's analytics requirements. <strong>Predictiveworks.</strong>  brings the power of predictive analytics to Elasticsearch.</p>
+
+<h2>
+<a name="reactive-series-analysis-engine" class="anchor" href="#reactive-series-analysis-engine"><span class="octicon octicon-link"></span></a>Reactive Series Analysis Engine</h2>
+
+<p><img src="https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/series-analysis-overview.png" alt="Series Analysis Engine Overview"></p>
+
+<p>The Series Analysis Engines is one of the nine members of the open ensemble and is built to support sequential pattern mining with a new and redefined 
+mining algorithm. The approach overcomes the well-known "threshold problem" and makes it a lot easier to directly leverage the resulting patterns and rules.</p>
 
 <p>Sequential pattern mining is an important mining technique with a wide range of real-life applications.
 It has been found very useful in domains such as </p>
@@ -45,24 +52,43 @@ It has been found very useful in domains such as </p>
 <li>medical treatment</li>
 <li>natural disaster</li>
 <li>user behavior analysis</li>
-</ul><p>and more.</p>
+</ul>
+
+<p>and more.</p>
 
 <p>It is an extension to the concept of association rule mining and solves the problem of discovering statistically 
 relevant patterns in big datasets that specify (timely ordered) sequences of data.</p>
 
-<p><img src="https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/spark-fsm.png" alt="Spark-FSM"></p>
+<h4>
+<a name="market-basket-analysis" class="anchor" href="#market-basket-analysis"><span class="octicon octicon-link"></span></a>Market Basket Analysis</h4>
 
-<p><strong>Sequences from Transactions</strong></p>
+<p>In market basket analysis, a sequence is built from the transactions of the customers, ordered by the transaction time. The most common interpretation of a transaction is that of a collection of the items a particular customer ordered (itemset). </p>
 
-<p>In market basket analysis, a sequence is a list of different transactions of a certain customer, ordered by the transaction time. Each transaction is a collection of the items a particular customer ordered (itemset). </p>
+<p>Sequential Patterns are very interesting in marketbasket analysis as they specify inter-transaction correlations, and e.g. discover <code>which items are frequently bought one after another.</code></p>
 
-<p>Sequential Patterns are very interesting in marketbasket analysis as they specify inter-transaction correlations, and e.g. discover which items are frequently bought one after another. For marketers, this is a valuable insight from which they may predict which item will be probably bought next.</p>
+<h4>
+<a name="product-recommendations" class="anchor" href="#product-recommendations"><span class="octicon octicon-link"></span></a>Product Recommendations</h4>
 
-<p><strong>Sequences from Web Sessions</strong></p>
+<p>Recommendation engines are often built from rating data, provided by customers that were asked to vote for a certain product or service. From such data, the customer engagement for all products or services of a company can be derived. Items with the highest engagements are then used for a recommendation, hopefully filtered by those that are already in the cart of or have been purchased in recent transactions.</p>
+
+<p>An alternative is to discover those items that were frequently bought together in the past. The respective relations between these products are derived from association rule mining and result in recommendations such as</p>
+
+<blockquote>
+<p>Customers who looked at or bought these items also looked at or bought those items.</p>
+</blockquote>
+
+<p>The customer purchase behavior, and here the sequence of buyings, is an excellent indicator for the (hidden) customer's intent. Recommendations that also take the relations between sequences of buyings into account, therefore reflect customer behavior much better than other techniques.</p>
+
+<p>The Sequence Mining Engine discovers the top sequential rules for item sequences that can be often found together and provides product recommendations from these rules. </p>
+
+<h4>
+<a name="web-usage-mining" class="anchor" href="#web-usage-mining"><span class="octicon octicon-link"></span></a>Web Usage Mining</h4>
 
 <p>In the context of web mining, especially web usage mining, companies need to understand what motivates their customers to purchase and how to influence the buying process to develop successful promotional activities.</p>
 
 <p>Evaluating web sessions and the timely ordered sequences of page visits (within a certain time period), e.g. helps to understand similarities of click-streams much better than treating sessions as sets of page visits. As a results, visitors can be clustered or segmented not only by visited content, but also by their timely behavior and signatures.</p>
+
+<hr>
 
 <h4>
 <a name="sequential-pattern-discovery-using-equivalence-classes-spade" class="anchor" href="#sequential-pattern-discovery-using-equivalence-classes-spade"><span class="octicon octicon-link"></span></a>Sequential Pattern Discovery using Equivalence Classes (SPADE)</h4>
@@ -78,34 +104,106 @@ relevant patterns in big datasets that specify (timely ordered) sequences of dat
 
 <p>We adapted Viger's original implementation and made his <strong>Top-K Sequential Rules</strong> algorithm available for Apache Spark.</p>
 
-<hr><h3>
-<a name="similarity-of-sequential-patterns-s2mp" class="anchor" href="#similarity-of-sequential-patterns-s2mp"><span class="octicon octicon-link"></span></a>Similarity of Sequential Patterns (S2MP)</h3>
+<hr>
 
-<p>Computing the similarity of sequential patterns is an important task to find regularities in sequences of data. This is the key to understand customer behavior, build profiles and signatures, and also to group similar customers by their temporally behavior.    </p>
+<h3>
+<a name="akka" class="anchor" href="#akka"><span class="octicon octicon-link"></span></a>Akka</h3>
 
-<p>The similarity of sequential patterns may be used to cluster, (a) the content of sequence databases to retrieve more homogeneous datasets for sequential pattern mining, or (b) to group the respective mining results. The latter approach is used for customer segmentation based on similar engagement behavior.</p>
+<p>Akka is a toolkit to build concurrent scalable applications, using the <a href="http://en.wikipedia.org/wiki/Actor_model">Actor Model</a>. Akka comes with a feature called <em>Akka Remoting</em>, which easily enables to setup a communication between software components in a peer-to-peer fashion.</p>
 
-<p>For real-world applications, it is important to measure the similarity of more complex sequences, built from itemsets rather than single items. A customer's purchase behavior is an example of such a more complex sequence.</p>
+<p>Akka and Akka Remoting are an appropriate means to establish a communication between prior independent software components - easy and fast.</p>
 
-<p>There exist already some similarity measures such as <code>Edit distance</code> (Levenshtein, 1996) and <code>LCS</code> (Longest Common Subsequence, 2002), but these methods do not take the content of the itemsets and their order and position in the sequences properly into account.</p>
+<hr>
 
-<p>We therefore decided to implement the <code>S2MP</code> similarity measure proposed by <a href="http://crpit.com/confpapers/CRPITV87Saneifar.pdf">Saneifar et al</a>, which successfully overcomes the mentioned shortcomings.</p>
+<h3>
+<a name="spark" class="anchor" href="#spark"><span class="octicon octicon-link"></span></a>Spark</h3>
 
-<p>From the similarity measure <code>sim(i,j)</code> of two sequences <code>i</code>and <code>j</code> it is straightforward to build the sequence engagement vector for sequence <code>i</code> with all other sequences. These vectors may then be used to build clusters with algorithms such as KMeans.</p>
+<p>From the <a href="https://spark.apache.org/">Apache Spark</a> website:</p>
 
-<p>In market basket analysis or web usage mining, a sequence of purchase transactions or web sessions is directly associated with a certain customer or visitor. The clusters built from KMeans and S2MP may then be applied to group customers with similar buying or web usage behavior.</p>
+<blockquote>
+<p>Apache Spark is a fast and general engine for large-scale data processing and is up to 100x faster than Hadoop MR in memory.</p>
+</blockquote>
 
-<hr><h3>
-<a name="clustering-of-sequential-patterns-skmeans" class="anchor" href="#clustering-of-sequential-patterns-skmeans"><span class="octicon octicon-link"></span></a>Clustering of Sequential Patterns (SKMeans)</h3>
+<p>The increasing number of associated projects, such as <a href="https://spark.apache.org/sql/">Spark SQL</a> and <a href="https://spark.apache.org/streaming/">Spark Streaming</a>, enables Spark to become the future  Unified Data Insight Platform. With this perspective in mind, we have integrated recently published Association Rule algorithms with Spark. This allows for a seamless usage of association rule mining either with batch or streaming data sources.</p>
 
-<p>Clustering of sequential data or patterns becomes more and more relevant for business applications. <code>SKMeans</code> is a modified version of Apache Spark's KMeans algorithm and is optimized for clustering sequential patterns based on the <code>S2MP</code> similarity measure. </p>
+<hr>
+
+<h3>
+<a name="data-sources" class="anchor" href="#data-sources"><span class="octicon octicon-link"></span></a>Data Sources</h3>
+
+<p>The Reactive Series Analysis Engine supports a rapidly increasing list of applicable data sources. Below is a list of data sources that are already supported or 
+will be supported in the near future:</p>
+
+<h4>
+<a name="elasticsearch" class="anchor" href="#elasticsearch"><span class="octicon octicon-link"></span></a>Elasticsearch</h4>
+
+<p><a href="http://www.elasticsearch.org">Elasticsearch</a> is a flexible and powerful distributed real-time search and analytics engine. Besides linguistic and semantic 
+enrichment, for data in a search index there is an increasing demand to apply analytics, knowledge discovery &amp; data mining, and even predictive analytics 
+to gain deeper insights into the data and further increase their business value.</p>
+
+<p>A step towards analytics is the recently introduced combination with <a href="http://logstash.net/">Logstash</a> to easily store logs and other time based event data 
+from any system in a single place.</p>
+
+<p>The Series Analysis Engine comes with a connector to Elasticsearch and thus brings knowledge discovery and data mining to the world of indexed data. The use 
+cases are endless. </p>
+
+<h4>
+<a name="piwik-analytics" class="anchor" href="#piwik-analytics"><span class="octicon octicon-link"></span></a>Piwik Analytics</h4>
+
+<p><a href="http://piwik.org">Piwik Analytics</a> is the leading and widely used open source web analytics platform, and is an excellent starting point to move into the world 
+of dynamic catalogs, product recommendations, purchase predictions and more.</p>
+
+<h4>
+<a name="pimcore-coming-soon" class="anchor" href="#pimcore-coming-soon"><span class="octicon octicon-link"></span></a>Pimcore (coming soon)</h4>
+
+<p><a href="http://pimcore.org">Pimcore</a> is an open source multi-channel experience and engagement management platform and contains a variety of integrated applications such 
+as Digital Asset Management, Ecommerce Framework, Marketing &amp; Campaign Management, Multi-Channel &amp; Web-to-Print, Product Information Management, Targeting &amp; Personalization and
+Web Content Management.</p>
+
+<h4>
+<a name="relational-databases" class="anchor" href="#relational-databases"><span class="octicon octicon-link"></span></a>Relational Databases</h4>
+
+<p>Elasticsearch is one of the connectors actually supported. As many ecommerce sites and analytics platforms work with JDBC databases, the Series Analysis Engine 
+also comes with a JDBC connector.</p>
+
+<hr>
+
+<h3>
+<a name="data-sinks" class="anchor" href="#data-sinks"><span class="octicon octicon-link"></span></a>Data Sinks</h3>
+
+<h4>
+<a name="elasticsearch-1" class="anchor" href="#elasticsearch-1"><span class="octicon octicon-link"></span></a>Elasticsearch</h4>
+
+<p>The Series Analysis Engine writes discovered patterns and rules to an Elasticsearch index. This ensures that these rules e.g. may directly be used for product recommendations delivered with 
+appropriate product search results.</p>
+
+<h4>
+<a name="redis" class="anchor" href="#redis"><span class="octicon octicon-link"></span></a>Redis</h4>
+
+<p><a href="http://redis.io">Redis</a> is open source and an advanced key-value cache and store, often referred to as a distributed data structure server. The Series Analysis Engine writes discovered patterns 
+and rules to a Redis instance as a multi-purpose serving layer for software enrichments that are not equipped with Elasticsearch.</p>
+
+<hr>
+
+<h3>
+<a name="technology" class="anchor" href="#technology"><span class="octicon octicon-link"></span></a>Technology</h3>
+
+<ul>
+<li>Akka</li>
+<li>Akka Remoting</li>
+<li>Elasticsearch</li>
+<li>Redis</li>
+<li>Spark</li>
+<li>Spark Streaming</li>
+<li>Spray</li>
+</ul>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Spark-fsm maintained by <a href="https://github.com/skrusche63">skrusche63</a></p>
+        <p class="copyright">Series Analysis Engine maintained by <a href="https://github.com/skrusche63">skrusche63</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
