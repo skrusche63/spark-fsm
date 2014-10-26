@@ -37,7 +37,7 @@ class FSMQuestor extends Actor with ActorLogging {
       
       req.task match {
         
-        case "get:associated" => {
+        case "get:followers" => {
 
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
@@ -62,7 +62,7 @@ class FSMQuestor extends Actor with ActorLogging {
                  
                })
                
-               val data = Map("uid" -> uid, "rules" -> rules)
+               val data = Map("uid" -> uid, "followers" -> rules)
                new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
              
              }
@@ -74,7 +74,7 @@ class FSMQuestor extends Actor with ActorLogging {
           
         }
 
-        case "get:pattern" => {
+        case "get:patterns" => {
 
           val resp = if (sink.patternsExist(uid) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
@@ -93,7 +93,7 @@ class FSMQuestor extends Actor with ActorLogging {
           
         }
         
-        case "get:rule" => {
+        case "get:rules" => {
           
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
