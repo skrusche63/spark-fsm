@@ -6,7 +6,7 @@
 
 ![Series Analysis Engine Overview](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/series-analysis-overview.png)
 
-The Series Analysis Engines is one of the nine members of the open ensemble and is built to support sequential pattern mining with a new and redefined 
+The Series Analysis Engine is one of the nine members of the open ensemble and is built to support sequential pattern mining with a new and redefined 
 mining algorithm. The approach overcomes the well-known "threshold problem" and makes it a lot easier to directly leverage the resulting patterns and rules.
 
 Sequential pattern mining is an important mining technique with a wide range of real-life applications.
