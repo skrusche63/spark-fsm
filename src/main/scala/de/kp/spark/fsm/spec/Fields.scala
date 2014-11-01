@@ -33,23 +33,33 @@ object Fields {
 
     try {
           
-      val root = if (RedisCache.metaExists(uid)) {      
-        XML.load(RedisCache.meta(uid))
-    
+      if (RedisCache.fieldsExist(uid)) {   
+        
+        val fieldspec = RedisCache.fields(uid)
+        for (field <- fieldspec.items) {
+        
+          val _name = field.name
+          val _type = field.datatype
+          
+          val _mapping = field.value
+          fields += _name -> (_mapping,_type) 
+          
+        }
+        
       } else {
-        XML.load(getClass.getClassLoader.getResource(path))  
+
+        val root = XML.load(getClass.getClassLoader.getResource(path))     
+        for (field <- root \ "field") {
+      
+          val _name  = (field \ "@name").toString
+          val _type  = (field \ "@type").toString
+
+          val _mapping = field.text
+          fields += _name -> (_mapping,_type) 
+      
+        }
       
      }
-   
-      for (field <- root \ "field") {
-      
-        val _name  = (field \ "@name").toString
-        val _type  = (field \ "@type").toString
-
-        val _mapping = field.text
-        fields += _name -> (_mapping,_type) 
-      
-      }
       
     } catch {
       case e:Exception => {}

@@ -58,9 +58,7 @@ class FSMMaster(@transient val sc:SparkContext) extends Actor with ActorLogging 
         case "train"  => ask(actor("miner"),deser).mapTo[ServiceResponse]
         case "status" => ask(actor("miner"),deser).mapTo[ServiceResponse]
 
-        /*
-         * Track item for later sequential pattern mining
-         */
+        case "register"  => ask(actor("registrar"),deser).mapTo[ServiceResponse]
         case "track"  => ask(actor("tracker"),deser).mapTo[ServiceResponse]
        
         case _ => {
@@ -92,6 +90,8 @@ class FSMMaster(@transient val sc:SparkContext) extends Actor with ActorLogging 
       case "miner" => context.actorOf(Props(new FSMMiner(sc)))
         
       case "questor" => context.actorOf(Props(new FSMQuestor()))
+        
+      case "registrar" => context.actorOf(Props(new FSMRegistrar()))
    
       case "tracker" => context.actorOf(Props(new FSMTracker()))
       
