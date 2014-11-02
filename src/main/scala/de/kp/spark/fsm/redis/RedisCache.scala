@@ -26,7 +26,7 @@ import scala.collection.JavaConversions._
 object RedisCache {
 
   val client  = RedisClient()
-  val service = "fsm"
+  val service = "series"
 
   def addFields(req:ServiceRequest,fields:Fields) {
     
