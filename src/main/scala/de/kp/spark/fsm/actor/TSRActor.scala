@@ -21,19 +21,17 @@ package de.kp.spark.fsm.actor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import akka.actor.{Actor,ActorLogging}
-
 import de.kp.spark.fsm.TSR
 import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.redis.RedisCache
 
-import de.kp.spark.fsm.sink.{ElasticSink,RedisSink}
+import de.kp.spark.fsm.sink.{ElasticSink,JdbcSink,RedisSink}
 
 import scala.collection.JavaConversions._
 
-class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
+class TSRActor(@transient val sc:SparkContext) extends MLActor {
 
   def receive = {
     
@@ -100,11 +98,34 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
   
   private def saveRules(req:ServiceRequest,rules:FSMRules) {
     
-    val sink = new RedisSink()
-    sink.addRules(req,rules)
+    val redis = new RedisSink()
+    redis.addRules(req,rules)
     
-    val elastic = new ElasticSink()
-    elastic.addRules(req,rules)
+    if (req.data.contains("sink") == false) return
+    
+    val sink = req.data("sink")
+    if (Sinks.isSink(sink) == false) return
+    
+    sink match {
+      
+      case Sinks.ELASTIC => {
+    
+        val elastic = new ElasticSink()
+        elastic.addRules(req,rules)
+        
+      }
+      
+      case Sinks.JDBC => {
+            
+        val jdbc = new JdbcSink()
+        jdbc.addRules(req,rules)
+        
+
+      }
+      
+      case _ => {/* do nothing */}
+      
+    }
     
   }
   
@@ -124,22 +145,6 @@ class TSRActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
       }
     }
     
-  }
-  
-  private def response(req:ServiceRequest,missing:Boolean):ServiceResponse = {
-    
-    val uid = req.data("uid")
-    
-    if (missing == true) {
-      val data = Map("uid" -> uid, "message" -> Messages.MISSING_PARAMETERS(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
-  
-    } else {
-      val data = Map("uid" -> uid, "message" -> Messages.MINING_STARTED(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.STARTED)	
-  
-    }
-
   }
   
 }

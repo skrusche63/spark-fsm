@@ -21,8 +21,6 @@ package de.kp.spark.fsm.actor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import akka.actor.{Actor,ActorLogging}
-
 import de.kp.spark.fsm.{Configuration,SPADE}
 import de.kp.spark.fsm.source.SequenceSource
 
@@ -31,7 +29,7 @@ import de.kp.spark.fsm.redis.RedisCache
 
 import de.kp.spark.fsm.sink.RedisSink
 
-class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging {
+class SPADEActor(@transient val sc:SparkContext) extends MLActor {
 
   def receive = {
     
@@ -117,22 +115,6 @@ class SPADEActor(@transient val sc:SparkContext) extends Actor with ActorLogging
       }
     }
     
-  }
-  
-  private def response(req:ServiceRequest,missing:Boolean):ServiceResponse = {
-    
-    val uid = req.data("uid")
-    
-    if (missing == true) {
-      val data = Map("uid" -> uid, "message" -> Messages.MISSING_PARAMETERS(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
-  
-    } else {
-      val data = Map("uid" -> uid, "message" -> Messages.MINING_STARTED(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.STARTED)	
-  
-    }
-
   }
   
 }

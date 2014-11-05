@@ -97,14 +97,31 @@ object Algorithms {
   val SPADE:String = "SPADE"
   val TSR:String   = "TSR"
   
+  private val algorithms = List(SPADE,TSR)
+  def isAlgorithm(algorithm:String):Boolean = algorithms.contains(algorithm)
+  
 }
 
 object Sources {
-  /* The names of the data source actually supported */
+
   val FILE:String    = "FILE"
   val ELASTIC:String = "ELASTIC" 
   val JDBC:String    = "JDBC"    
   val PIWIK:String   = "PIWIK"    
+
+  private val sources = List(FILE,ELASTIC,JDBC,PIWIK)
+  def isSource(source:String):Boolean = sources.contains(source)
+  
+}
+
+object Sinks {
+  
+  val ELASTIC:String = "ELASTIC"
+  val JDBC:String    = "JDBC"
+    
+  private val sinks = List(ELASTIC,JDBC)
+  def isSink(sink:String):Boolean = sinks.contains(sink)
+  
 }
 
 object Messages {

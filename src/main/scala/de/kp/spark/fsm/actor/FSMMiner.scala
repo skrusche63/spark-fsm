@@ -36,9 +36,6 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
 
   implicit val ec = context.dispatcher
   
-  private val algorithms = Array(Algorithms.SPADE,Algorithms.TSR)
-  private val sources = Array(Sources.ELASTIC,Sources.FILE,Sources.JDBC,Sources.PIWIK)
-  
   def receive = {
 
     case req:ServiceRequest => {
@@ -152,7 +149,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
       }
         
       case Some(algorithm) => {
-        if (algorithms.contains(algorithm) == false) {
+        if (Algorithms.isAlgorithm(algorithm) == false) {
           return Some(Messages.ALGORITHM_IS_UNKNOWN(uid,algorithm))    
         }
           
@@ -167,7 +164,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
       }
         
       case Some(source) => {
-        if (sources.contains(source) == false) {
+        if (Sources.isSource(source) == false) {
           return Some(Messages.SOURCE_IS_UNKNOWN(uid,source))    
         }          
       }
