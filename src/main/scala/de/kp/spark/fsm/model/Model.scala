@@ -130,14 +130,7 @@ object Messages {
 
   def GENERAL_ERROR(uid:String):String = String.format("""A general error appeared for uid '%s'.""", uid)
 
-  /*
-   * Predict request have to provide either antecedents or consequents 
-   * that will be used as match criteria against discovered rules
-   */
-  def NO_ANTECEDENTS_OR_CONSEQUENTS_PROVIDED(uid:String):String = 
-    String.format("""
-      No antecedents or consequents are provided for uid '%s'.
-    """.stripMargin, uid)
+  def NO_ITEMS_PROVIDED(uid:String):String = String.format("""No items are provided for uid '%s'.""", uid)
 
   def MINING_STARTED(uid:String) = String.format("""Mining started for uid '%s'.""", uid)
   

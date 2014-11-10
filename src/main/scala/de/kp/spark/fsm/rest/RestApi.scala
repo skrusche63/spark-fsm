@@ -107,10 +107,11 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
 	    
     subject match {
 
-      case "followers" => doRequest(ctx,"series","get:followers")
+      case "antecedent" => doRequest(ctx,"series","get:antecedent")
+      case "consequent" => doRequest(ctx,"series","get:consequent")
 
-      case "patterns" => doRequest(ctx,"series","get:patterns")     
-	  case "rules"    => doRequest(ctx,"series","get:rules")
+      case "pattern" => doRequest(ctx,"series","get:pattern")     
+	  case "rule"    => doRequest(ctx,"series","get:rule")
 	      
 	  case _ => {}
 	  

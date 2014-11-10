@@ -35,32 +35,49 @@ class FSMQuestor extends BaseActor {
       
       req.task match {
         
-        case "get:followers" => {
+        case "get:antecedent" => {
 
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
 
-            val antecedent = req.data.getOrElse("antecedent", null) 
-            val consequent = req.data.getOrElse("consequent", null)            
-
-            if (antecedent == null && consequent == null) {
-               failure(req,Messages.NO_ANTECEDENTS_OR_CONSEQUENTS_PROVIDED(uid))
+            if (req.data.contains("items") == false) {
+               failure(req,Messages.NO_ITEMS_PROVIDED(uid))
              
              } else {
 
-               val rules = (if (antecedent != null) {
-                 val items = antecedent.split(",").map(_.toInt).toList
-                 sink.rulesByAntecedent(uid,items)
+               val items = req.data("items").split(",").map(_.toInt).toList
+               val rules = sink.rulesByAntecedent(uid,items)
                
-               } else {
-                 val items = consequent.split(",").map(_.toInt).toList
-                 sink.rulesByConsequent(uid,items)
-                 
-               })
+               val data = Map("uid" -> uid, "rule" -> rules)
+               new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
+             
+             }
+            
+          }
+           
+          origin ! Serializer.serializeResponse(resp)
+          context.stop(self)
+          
+        }
+        
+        case "get:consequent" => {
+
+          val resp = if (sink.rulesExist(uid) == false) {           
+            failure(req,Messages.RULES_DO_NOT_EXIST(uid))
+            
+          } else {    
+
+            if (req.data.contains("items") == false) {
+               failure(req,Messages.NO_ITEMS_PROVIDED(uid))
+             
+             } else {
+
+               val items = req.data("items").split(",").map(_.toInt).toList
+               val rules = sink.rulesByConsequent(uid,items)
                
-               val data = Map("uid" -> uid, "followers" -> rules)
+               val data = Map("uid" -> uid, "rule" -> rules)
                new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
              
              }
@@ -72,7 +89,7 @@ class FSMQuestor extends BaseActor {
           
         }
 
-        case "get:patterns" => {
+        case "get:pattern" => {
 
           val resp = if (sink.patternsExist(uid) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
@@ -81,7 +98,7 @@ class FSMQuestor extends BaseActor {
             
             val patterns = sink.patterns(uid)
                
-            val data = Map("uid" -> uid, "patterns" -> patterns)
+            val data = Map("uid" -> uid, "pattern" -> patterns)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
             
           }
@@ -91,7 +108,7 @@ class FSMQuestor extends BaseActor {
           
         }
         
-        case "get:rules" => {
+        case "get:rule" => {
           
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
@@ -100,7 +117,7 @@ class FSMQuestor extends BaseActor {
             
             val rules = sink.rules(uid)
                
-            val data = Map("uid" -> uid, "rules" -> rules)
+            val data = Map("uid" -> uid, "rule" -> rules)
             new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
             
           }
