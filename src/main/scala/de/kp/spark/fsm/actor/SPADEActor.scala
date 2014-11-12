@@ -93,6 +93,9 @@ class SPADEActor(@transient val sc:SparkContext) extends MLActor {
     /* Update status */
     RedisCache.addStatus(req,FSMStatus.FINISHED)
 
+    /* Notify potential listeners */
+    notify(req,FSMStatus.FINISHED)
+
   }  
   
   private def savePatterns(req:ServiceRequest,patterns:FSMPatterns) {
