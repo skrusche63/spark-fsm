@@ -61,21 +61,17 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
    */
   private def routes:Route = {
 
-    /*
-     * Action specifies a concept that is supported by the REST service;
-     * other concepts are content,feature,product and state
-     */
-    path("train") {
-	  post {
-	    respondWithStatus(OK) {
-	      ctx => doTrain(ctx)
-	    }
-	  }
-    }  ~ 
     path("get" / Segment) {subject => 
 	  post {
 	    respondWithStatus(OK) {
 	      ctx => doGet(ctx,subject)
+	    }
+	  }
+    }  ~ 
+    path("index") { 
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doIndex(ctx)
 	    }
 	  }
     }  ~ 
@@ -99,7 +95,14 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
 	      ctx => doTrack(ctx)
 	    }
 	  }
-    } 
+    }  ~  
+    path("train") {
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doTrain(ctx)
+	    }
+	  }
+    }
   
   }
 
@@ -118,6 +121,8 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     }
     
   }
+  
+  private def doIndex[T](ctx:RequestContext) = doRequest(ctx,"series","index")
   
   private def doRegister[T](ctx:RequestContext) = doRequest(ctx,"series","register")
   

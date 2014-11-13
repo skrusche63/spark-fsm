@@ -54,6 +54,7 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
 	  val response = deser.task.split(":")(0) match {
         
         case "get" => ask(actor("questor"),deser).mapTo[ServiceResponse]
+        case "index" => ask(actor("indexer"),deser).mapTo[ServiceResponse]
         
         case "train"  => ask(actor("miner"),deser).mapTo[ServiceResponse]
         case "status" => ask(actor("miner"),deser).mapTo[ServiceResponse]
@@ -86,6 +87,8 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
   private def actor(worker:String):ActorRef = {
     
     worker match {
+  
+      case "indexer" => context.actorOf(Props(new FSMIndexer()))
   
       case "miner" => context.actorOf(Props(new FSMMiner(sc)))
         

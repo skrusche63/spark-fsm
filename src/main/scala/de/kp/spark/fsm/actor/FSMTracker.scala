@@ -18,17 +18,13 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import akka.actor.{Actor,ActorLogging}
-
 import de.kp.spark.fsm.model._
-
-import de.kp.spark.fsm.io.ElasticWriter
-import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF}
+import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF,ElasticWriter}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
 
-class FSMTracker extends Actor with ActorLogging {
+class FSMTracker extends BaseActor {
   
   def receive = {
     
@@ -43,24 +39,18 @@ class FSMTracker extends Actor with ActorLogging {
       origin ! Serializer.serializeResponse(response)
 
       try {
-        /*
-         * Elasticsearch is used as a source and also as a sink; this implies
-         * that the respective index and mapping must be distinguished; the source
-         * index and mapping used here is the same as for ElasticSource
-         */
-        val index   = req.data("source.index")
-        val mapping = req.data("source.type")
+
+        val index   = req.data("index")
+        val mapping = req.data("type")
     
-        val builder = EBF.getBuilder("item",mapping)
         val writer = new ElasticWriter()
     
-        /* Prepare index and mapping for write */
-        val readyToWrite = writer.open(index,mapping,builder)
+        val readyToWrite = writer.open(index,mapping)
         if (readyToWrite == false) {
       
           writer.close()
       
-          val msg = String.format("""Opening index '%s' and maping '%s' for write failed.""",index,mapping)
+          val msg = String.format("""Opening index '%s' and mapping '%s' for write failed.""",index,mapping)
           throw new Exception(msg)
       
         } else {
