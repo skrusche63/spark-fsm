@@ -89,6 +89,7 @@ object Serializer {
   def serializeResponse(response:ServiceResponse):String = write(response)
   
   def deserializeRequest(request:String):ServiceRequest = read[ServiceRequest](request)
+  def serializeRequest(request:ServiceRequest):String = write(request)
   
   /*
    * Support for serialization and deserialization of rules

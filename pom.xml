@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>spark-fsm</groupId>
   <artifactId>spark-fsm</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.2.0</version>
   <name>Spark-FSM</name>
-  <description>Implementation of Frequent Sequence Mining in Scala and Apache Spark.</description>
+  <description>Reactive Series Analysis engine of Predictiveworks.</description>
   <inceptionYear>2010</inceptionYear>
   <licenses>
     <license>
@@ -218,6 +218,7 @@
   </build>
   <organization>
   	<name>Dr. Krusche &amp; Partner PartG</name>
-  	<url>http://dr-kruscheundpartner.de</url>
+  	<url>http://dr-kruscheundpartner.com</url>
   </organization>
+  <url>https://github.com/skrusche63/spark-fsm</url>
 </project>
