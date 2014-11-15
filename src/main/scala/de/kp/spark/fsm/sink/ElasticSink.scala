@@ -41,23 +41,9 @@ class ElasticSink {
      * Elasticsearch is used as a source and also as a sink; this implies
      * that the respective index and mapping must be distinguished
      */    
-    val index   = req.data("sink.index")
-    val mapping = req.data("sink.type")
-
-    /* Prepare index and mapping for write */    
-    val builder = EBF.getBuilder("rule",mapping)
-    val indexer = new ElasticIndexer()
+    val index   = req.data("dst.index")
+    val mapping = req.data("dst.type")
     
-    /* 
-     * If index and mapping already existing
-     * no actions taken by the indexer
-     */
-    indexer.create(index,mapping,builder)
-    indexer.close()
-    
-    /*
-     * Write to index
-     */
     val writer = new ElasticWriter()
     
     val readyToWrite = writer.open(index,mapping)
@@ -65,7 +51,7 @@ class ElasticSink {
       
       writer.close()
       
-      val msg = String.format("""Opening index '%s' and maping '%s' for write failed.""",index,mapping)
+      val msg = String.format("""Opening index '%s' and mapping '%s' for write failed.""",index,mapping)
       throw new Exception(msg)
       
     }

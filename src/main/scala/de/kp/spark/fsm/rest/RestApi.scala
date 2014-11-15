@@ -68,10 +68,10 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
 	    }
 	  }
     }  ~ 
-    path("index") { 
+    path("index" / Segment) {subject =>  
 	  post {
 	    respondWithStatus(OK) {
-	      ctx => doIndex(ctx)
+	      ctx => doIndex(ctx,subject)
 	    }
 	  }
     }  ~ 
@@ -121,8 +121,20 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     }
     
   }
-  
-  private def doIndex[T](ctx:RequestContext) = doRequest(ctx,"series","index")
+ 
+  private def doIndex[T](ctx:RequestContext,subject:String) = {
+    
+    subject match {
+      
+      case "item" => doRequest(ctx,"series","index:item")
+      
+      case "rule" => doRequest(ctx,"series","index:rule")
+      
+      case _ => {}
+      
+    }
+    
+  }
   
   private def doRegister[T](ctx:RequestContext) = doRequest(ctx,"series","register")
   

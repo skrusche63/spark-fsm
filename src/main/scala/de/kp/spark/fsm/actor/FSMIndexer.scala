@@ -34,7 +34,22 @@ class FSMIndexer extends BaseActor {
         val index   = req.data("index")
         val mapping = req.data("type")
     
-        val builder = EBF.getBuilder("item",mapping)
+        val topic = req.task match {
+          
+          case "index:item" => "item"
+          
+          case "index:rule" => "rule"
+          
+          case _ => {
+            
+            val msg = Messages.TASK_IS_UNKNOWN(uid,req.task)
+            throw new Exception(msg)
+            
+          }
+        
+        }
+        
+        val builder = EBF.getBuilder(topic,mapping)
         val indexer = new ElasticIndexer()
     
         indexer.create(index,mapping,builder)
