@@ -22,15 +22,13 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import de.kp.spark.fsm.io.ElasticReader
-
 import de.kp.spark.fsm.Configuration
-import de.kp.spark.fsm.spec.Fields
 
-class ElasticSource(@transient sc:SparkContext) extends Source(sc) {
+class ElasticSource(@transient sc:SparkContext) {
  
   val conf = Configuration.elastic
   
-  override def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[(Int,String)] = {
+  def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[Map[String,String]] = {
     /*
      * Elasticsearch is used as a data source as well as a data sink;
      * this implies that the respective indexes and mappings have to
@@ -40,59 +38,8 @@ class ElasticSource(@transient sc:SparkContext) extends Source(sc) {
     val mapping = params("source.type").asInstanceOf[String]
     
     val query = params("query").asInstanceOf[String]
- 
-    val uid = params("uid").asInstanceOf[String]
-    val spec = sc.broadcast(Fields.get(uid))
-
-    /* Connect to Elasticsearch */
-    val rawset = new ElasticReader(sc,index,mapping,query).read
-    val dataset = rawset.map(data => {
-      
-      val site = data(spec.value("site")._1)
-      val timestamp = data(spec.value("timestamp")._1).toLong
-
-      val user = data(spec.value("user")._1)      
-      val group = data(spec.value("group")._1)
-
-      val item  = data(spec.value("item")._1)
-      
-      (site,user,group,timestamp,item)
-      
-    })
-    /*
-     * Group dataset by site & user and aggregate all items of a
-     * certain group and all groups into a time-ordered sequence
-     * representation that is compatible to the SPMF format.
-     */
-    val sequences = dataset.groupBy(v => (v._1,v._2)).map(data => {
-      
-      /*
-       * Aggregate all items of a certain group onto a single
-       * line thereby sorting these items in ascending order.
-       * 
-       * And then, sort these items by timestamp in ascending
-       * order.
-       */
-      val groups = data._2.groupBy(_._3).map(group => {
-
-        val timestamp = group._2.head._4
-        val items = group._2.map(_._5.toInt).toList.distinct.sorted.mkString(" ")
-
-        (timestamp,items)
-        
-      }).toList.sortBy(_._1)
-      
-      /*
-       * Finally aggregate all sorted item groups (or sets) in a single
-       * line and use SPMF format
-       */
-      groups.map(_._2).mkString(" -1 ") + " -2"
-      
-    }).coalesce(1)
-
-    val ids = sc.parallelize(Range.Long(0,sequences.count,1),sequences.partitions.size)
-    sequences.zip(ids).map(valu => (valu._2.toInt,valu._1)).cache()
-
+    new ElasticReader(sc,index,mapping,query).read
+  
   }
-
+  
 }

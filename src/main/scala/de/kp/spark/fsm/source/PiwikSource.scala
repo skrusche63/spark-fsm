@@ -47,7 +47,7 @@ class PiwikSource(@transient sc:SparkContext) extends JdbcSource(sc) {
       "quantity",
       "deleted")
 
-  override def connect(params:Map[String,Any]):RDD[(Int,String)] = {
+  override def connect(params:Map[String,Any]):RDD[Map[String,Any]] = {
     
     /* Retrieve site, start & end date from params */
     val site = params("site").asInstanceOf[Int]
@@ -58,56 +58,8 @@ class PiwikSource(@transient sc:SparkContext) extends JdbcSource(sc) {
     val sql = query(database,site.toString,startdate,enddate)
     
     val rawset = new JdbcReader(sc,site,sql).read(LOG_ITEM_FIELDS)    
-    val rows = rawset.filter(row => (isDeleted(row) == false)).map(row => {
-      
-      val site = row("idsite").asInstanceOf[Long]
-      val timestamp  = row("server_time").asInstanceOf[Long]
-
-      /* Convert 'idvisitor' into a HEX String representation */
-      val idvisitor = row("idvisitor").asInstanceOf[Array[Byte]]     
-      val user = new java.math.BigInteger(1, idvisitor).toString(16)
-
-      val group = row("idorder").asInstanceOf[String]
-      val item  = row("idaction_sku").asInstanceOf[Long]
-      
-      (site,user,group,timestamp,item)
-      
-    })
-    
-    /*
-     * Group dataset by site & user and aggregate all items of a
-     * certain group and all groups into a time-ordered sequence
-     * representation that is compatible to the SPMF format.
-     */
-    val sequences = rows.groupBy(v => (v._1,v._2)).map(data => {
-      
-      /*
-       * Aggregate all items of a certain group onto a single
-       * line thereby sorting these items in ascending order.
-       * 
-       * And then, sort these items by timestamp in ascending
-       * order.
-       */
-      val groups = data._2.groupBy(_._3).map(group => {
-
-        val timestamp = group._2.head._4
-        val items = group._2.map(_._5.toInt).toList.distinct.sorted.mkString(" ")
-
-        (timestamp,items)
-        
-      }).toList.sortBy(_._1)
-      
-      /*
-       * Finally aggregate all sorted item groups (or sets) in a single
-       * line and use SPMF format
-       */
-      groups.map(_._2).mkString(" -1 ") + " -2"
-      
-    }).coalesce(1)
-
-    val ids = sc.parallelize(Range.Long(0,sequences.count,1),sequences.partitions.size)
-    sequences.zip(ids).map(valu => (valu._2.toInt,valu._1)).cache()
-
+    rawset.filter(row => (isDeleted(row) == false))
+  
   }
   
   /**

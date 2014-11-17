@@ -23,23 +23,12 @@ import org.apache.spark.rdd.RDD
 
 import de.kp.spark.fsm.Configuration
 
-class FileSource(@transient sc:SparkContext) extends Source(sc) {
+class FileSource(@transient sc:SparkContext) {
 
   val input = Configuration.file()
 
-  /**
-   * Read data from file system: it is expected that the lines with
-   * the respective text file are already formatted in the SPMF form
-   */
-  override def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[(Int,String)] = {
-    
-    sc.textFile(input).filter(line => line.isEmpty == false).map(valu => {
-      
-      val Array(sid,seq) = valu.split("\\|")  
-      (sid.toInt,seq)
-    
-    })
-    
+  def connect(params:Map[String,Any] = Map.empty[String,Any]):RDD[String] = {
+    sc.textFile(input).filter(line => line.isEmpty == false)
   }
   
 }

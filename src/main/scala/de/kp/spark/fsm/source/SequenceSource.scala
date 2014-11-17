@@ -30,7 +30,11 @@ import de.kp.spark.fsm.model.Sources
  */
 class SequenceSource (@transient sc:SparkContext) {
 
+  private val model = new SequenceModel(sc)
+  
   def get(data:Map[String,String]):RDD[(Int,String)] = {
+    
+    val uid = data("uid")
     
     val source = data("source")
     source match {
@@ -40,25 +44,45 @@ class SequenceSource (@transient sc:SparkContext) {
        * search index from Elasticsearch; the configuration
        * parameters are retrieved from the service configuration 
        */    
-      case Sources.ELASTIC => new ElasticSource(sc).connect(data)
+      case Sources.ELASTIC => {
+        
+        val rawset = new ElasticSource(sc).connect(data)
+        model.buildElastic(uid,rawset)
+        
+      }
       /* 
        * Retrieve sequence database persisted as a file on the (HDFS) 
        * file system; the configuration parameters are retrieved from 
        * the service configuration  
        */    
-      case Sources.FILE => new FileSource(sc).connect(data)
+      case Sources.FILE => {
+        
+        val rawset = new FileSource(sc).connect(data)
+        model.buildFile(uid,rawset)
+        
+      }
       /*
        * Retrieve sequence database persisted as an appropriate table 
        * from a JDBC database; the configuration parameters are retrieved 
        * from the service configuration
        */
-      case Sources.JDBC => new JdbcSource(sc).connect(data)
+      case Sources.JDBC => {
+        
+        val rawset = new JdbcSource(sc).connect(data)
+        model.buildJDBC(uid,rawset)
+        
+      }
       /*
        * Retrieve sequence database persisted as an appropriate table from 
        * a Piwik database; the configuration parameters are retrieved from 
        * the service configuration
        */
-      case Sources.PIWIK => new PiwikSource(sc).connect(data)
+      case Sources.PIWIK => {
+        
+        val rawset = new PiwikSource(sc).connect(data)
+        model.buildPiwik(uid,rawset)
+        
+      }
             
       case _ => null
       
