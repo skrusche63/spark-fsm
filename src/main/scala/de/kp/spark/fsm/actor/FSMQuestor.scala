@@ -51,7 +51,7 @@ class FSMQuestor extends BaseActor {
                val rules = sink.rulesByAntecedent(uid,items)
                
                val data = Map("uid" -> uid, "rule" -> rules)
-               new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
+               new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
              
              }
             
@@ -78,7 +78,7 @@ class FSMQuestor extends BaseActor {
                val rules = sink.rulesByConsequent(uid,items)
                
                val data = Map("uid" -> uid, "rule" -> rules)
-               new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
+               new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
              
              }
             
@@ -99,7 +99,7 @@ class FSMQuestor extends BaseActor {
             val patterns = sink.patterns(uid)
                
             val data = Map("uid" -> uid, "pattern" -> patterns)
-            new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
+            new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
             
           }
            
@@ -118,7 +118,7 @@ class FSMQuestor extends BaseActor {
             val rules = sink.rules(uid)
                
             val data = Map("uid" -> uid, "rule" -> rules)
-            new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)
+            new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
             
           }
            

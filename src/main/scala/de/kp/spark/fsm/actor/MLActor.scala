@@ -46,11 +46,11 @@ abstract class MLActor extends Actor with ActorLogging {
     
     if (missing == true) {
       val data = Map("uid" -> uid, "message" -> Messages.MISSING_PARAMETERS(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+      new ServiceResponse(req.service,req.task,data,ResponseStatus.FAILURE)	
   
     } else {
       val data = Map("uid" -> uid, "message" -> Messages.MINING_STARTED(uid))
-      new ServiceResponse(req.service,req.task,data,FSMStatus.STARTED)	
+      new ServiceResponse(req.service,req.task,data,ResponseStatus.STARTED)	
   
     }
 

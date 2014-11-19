@@ -42,19 +42,19 @@ class SPADEActor(@transient val sc:SparkContext) extends MLActor {
 
       if (params != null) {
         /* Register status */
-        RedisCache.addStatus(req,FSMStatus.STARTED)
+        RedisCache.addStatus(req,ResponseStatus.STARTED)
  
         try {
           
           val dataset = new SequenceSource(sc).get(req.data)
  
-          RedisCache.addStatus(req,FSMStatus.DATASET)
+          RedisCache.addStatus(req,ResponseStatus.DATASET)
           
           val support = params     
           findPatterns(req,dataset,support)
 
         } catch {
-          case e:Exception => RedisCache.addStatus(req,FSMStatus.FAILURE)          
+          case e:Exception => RedisCache.addStatus(req,ResponseStatus.FAILURE)          
         }
  
 
@@ -91,10 +91,10 @@ class SPADEActor(@transient val sc:SparkContext) extends MLActor {
     savePatterns(req,new FSMPatterns(patterns))
           
     /* Update status */
-    RedisCache.addStatus(req,FSMStatus.FINISHED)
+    RedisCache.addStatus(req,ResponseStatus.FINISHED)
 
     /* Notify potential listeners */
-    notify(req,FSMStatus.FINISHED)
+    notify(req,ResponseStatus.FINISHED)
 
   }  
   

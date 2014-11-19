@@ -46,7 +46,7 @@ class FSMRegistrar extends BaseActor {
         fields += new Field("item","integer",req.data("item"))
         RedisCache.addFields(req, new Fields(fields.toList))
         
-        new ServiceResponse("series","register",Map("uid"-> uid),FSMStatus.SUCCESS)
+        new ServiceResponse("series","register",Map("uid"-> uid),ResponseStatus.SUCCESS)
         
       } catch {
         case throwable:Throwable => failure(req,throwable.getMessage)

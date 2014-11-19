@@ -56,7 +56,7 @@ class FSMIndexer extends BaseActor {
         indexer.close()
       
         val data = Map("uid" -> uid, "message" -> Messages.SEARCH_INDEX_CREATED(uid))
-        val response = new ServiceResponse(req.service,req.task,data,FSMStatus.SUCCESS)	
+        val response = new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)	
       
         val origin = sender
         origin ! Serializer.serializeResponse(response)
@@ -68,7 +68,7 @@ class FSMIndexer extends BaseActor {
           log.error(e, e.getMessage())
       
           val data = Map("uid" -> uid, "message" -> e.getMessage())
-          val response = new ServiceResponse(req.service,req.task,data,FSMStatus.FAILURE)	
+          val response = new ServiceResponse(req.service,req.task,data,ResponseStatus.FAILURE)	
       
           val origin = sender
           origin ! Serializer.serializeResponse(response)
