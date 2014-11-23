@@ -37,6 +37,7 @@ import scala.concurrent.duration.DurationInt
 
 import scala.util.parsing.json._
 
+import de.kp.spark.core.rest.RestService
 import de.kp.spark.fsm.Configuration
 
 import de.kp.spark.fsm.actor.FSMMaster
@@ -45,7 +46,7 @@ import de.kp.spark.fsm.model._
 class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkContext) extends HttpService with Directives {
 
   implicit val ec:ExecutionContext = system.dispatcher  
-  import de.kp.spark.fsm.rest.RestJsonSupport._
+  import de.kp.spark.core.rest.RestJsonSupport._
   
   override def actorRefFactory:ActorSystem = system
 

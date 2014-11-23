@@ -24,7 +24,9 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.rdd.RDD
 
 import de.kp.core.spade._
-import de.kp.spark.fsm.source.{FileSource,SequenceModel}
+import de.kp.spark.core.source.FileSource
+
+import de.kp.spark.fsm.source.{SequenceModel}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ArrayBuffer,HashMap}
@@ -40,7 +42,9 @@ object SPADE extends Serializable {
     
     val model = new SequenceModel(sc)
     
-    val rawset = new FileSource(sc).connect()
+    val path = Configuration.file()
+    val rawset = new FileSource(sc).connect(null,path)
+    
     val dataset = model.buildFile(null,rawset)
     
     extractRDDPatterns(dataset,support,dfs,stats)

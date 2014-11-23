@@ -20,7 +20,8 @@ package de.kp.spark.fsm.rest
 
 import akka.actor.ActorSystem
 
-import de.kp.spark.fsm.{Configuration,SparkService}
+import de.kp.spark.core.SparkService
+import de.kp.spark.fsm.{Configuration}
 
 object RestServer extends SparkService {
   

@@ -21,7 +21,12 @@ package de.kp.spark.fsm.source
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.source.{ElasticSource,FileSource,JdbcSource}
+
+import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.model.Sources
+
+import de.kp.spark.fsm.spec.Fields
 
 /**
  * A SequenceSource is an abstraction layer on top of
@@ -56,8 +61,10 @@ class SequenceSource (@transient sc:SparkContext) {
        * the service configuration  
        */    
       case Sources.FILE => {
+
+        val path = Configuration.file()
         
-        val rawset = new FileSource(sc).connect(data)
+        val rawset = new FileSource(sc).connect(data,path)
         model.buildFile(uid,rawset)
         
       }
@@ -67,8 +74,10 @@ class SequenceSource (@transient sc:SparkContext) {
        * from the service configuration
        */
       case Sources.JDBC => {
+    
+        val fields = Fields.get(uid).map(kv => kv._2._1).toList    
         
-        val rawset = new JdbcSource(sc).connect(data)
+        val rawset = new JdbcSource(sc).connect(data,fields)
         model.buildJDBC(uid,rawset)
         
       }

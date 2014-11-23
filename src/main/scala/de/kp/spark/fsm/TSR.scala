@@ -29,7 +29,9 @@ import org.apache.hadoop.mapred.TextInputFormat
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
-import de.kp.spark.fsm.source.{FileSource,SequenceModel}
+import de.kp.spark.core.source.FileSource
+
+import de.kp.spark.fsm.source.{SequenceModel}
 import de.kp.core.tsr.{Rule,Sequence,TSRAlgorithm,Vertical}
 
 object TSR extends Serializable {
@@ -38,7 +40,9 @@ object TSR extends Serializable {
     
     val model = new SequenceModel(sc)
     
-    val rawset = new FileSource(sc).connect()
+    val path = Configuration.file()
+    val rawset = new FileSource(sc).connect(null,path)
+    
     val dataset = model.buildFile(null,rawset)
     
     extractRDDRules(dataset,k,minconf)

@@ -20,8 +20,8 @@ package de.kp.spark.fsm.sink
 
 import java.util.Date
 
+import de.kp.spark.core.redis.RedisClient
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.redis.RedisClient
 
 import scala.collection.JavaConversions._
 
