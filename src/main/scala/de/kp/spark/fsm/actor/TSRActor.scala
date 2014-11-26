@@ -21,17 +21,17 @@ package de.kp.spark.fsm.actor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.model._
+
 import de.kp.spark.fsm.TSR
 import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.redis.RedisCache
-
 import de.kp.spark.fsm.sink.{ElasticSink,JdbcSink,RedisSink}
 
 import scala.collection.JavaConversions._
 
-class TSRActor(@transient val sc:SparkContext) extends MLActor {
+class TSRActor(@transient val sc:SparkContext) extends BaseActor {
 
   def receive = {
     
@@ -44,19 +44,18 @@ class TSRActor(@transient val sc:SparkContext) extends MLActor {
 
       if (params != null) {
         /* Register status */
-        RedisCache.addStatus(req,ResponseStatus.STARTED)
+        cache.addStatus(req,ResponseStatus.STARTED)
  
         try {
           
-          val dataset = new SequenceSource(sc).get(req.data)
-
-          RedisCache.addStatus(req,ResponseStatus.DATASET)
+          val dataset = new SequenceSource(sc).get(req)
+          cache.addStatus(req,ResponseStatus.DATASET)
           
           val (k,minconf) = params     
           findRules(req,dataset,k,minconf)
 
         } catch {
-          case e:Exception => RedisCache.addStatus(req,ResponseStatus.FAILURE)          
+          case e:Exception => cache.addStatus(req,ResponseStatus.FAILURE)          
         }
  
 
@@ -92,7 +91,7 @@ class TSRActor(@transient val sc:SparkContext) extends MLActor {
     saveRules(req,new FSMRules(rules))
           
     /* Update status */
-    RedisCache.addStatus(req,ResponseStatus.FINISHED)
+    cache.addStatus(req,ResponseStatus.FINISHED)
 
     /* Notify potential listeners */
     notify(req,ResponseStatus.FINISHED)

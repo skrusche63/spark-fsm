@@ -21,15 +21,15 @@ package de.kp.spark.fsm.actor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.model._
+
 import de.kp.spark.fsm.{Configuration,SPADE}
 import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.redis.RedisCache
-
 import de.kp.spark.fsm.sink.RedisSink
 
-class SPADEActor(@transient val sc:SparkContext) extends MLActor {
+class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
 
   def receive = {
     
@@ -42,19 +42,19 @@ class SPADEActor(@transient val sc:SparkContext) extends MLActor {
 
       if (params != null) {
         /* Register status */
-        RedisCache.addStatus(req,ResponseStatus.STARTED)
+        cache.addStatus(req,ResponseStatus.STARTED)
  
         try {
           
-          val dataset = new SequenceSource(sc).get(req.data)
+          val dataset = new SequenceSource(sc).get(req)
  
-          RedisCache.addStatus(req,ResponseStatus.DATASET)
+          cache.addStatus(req,ResponseStatus.DATASET)
           
           val support = params     
           findPatterns(req,dataset,support)
 
         } catch {
-          case e:Exception => RedisCache.addStatus(req,ResponseStatus.FAILURE)          
+          case e:Exception => cache.addStatus(req,ResponseStatus.FAILURE)          
         }
  
 
@@ -91,7 +91,7 @@ class SPADEActor(@transient val sc:SparkContext) extends MLActor {
     savePatterns(req,new FSMPatterns(patterns))
           
     /* Update status */
-    RedisCache.addStatus(req,ResponseStatus.FINISHED)
+    cache.addStatus(req,ResponseStatus.FINISHED)
 
     /* Notify potential listeners */
     notify(req,ResponseStatus.FINISHED)

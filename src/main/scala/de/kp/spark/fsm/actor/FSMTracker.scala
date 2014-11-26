@@ -18,6 +18,8 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
+import de.kp.spark.core.model._
+
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF,ElasticWriter}
 

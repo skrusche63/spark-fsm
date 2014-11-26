@@ -21,6 +21,8 @@ package de.kp.spark.fsm.source
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.model._
+
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.spec.Fields
 
@@ -28,9 +30,9 @@ import scala.collection.mutable.ArrayBuffer
 
 class SequenceModel(@transient sc:SparkContext) extends Serializable {
   
-  def buildElastic(uid:String,rawset:RDD[Map[String,String]]):RDD[(Int,String)] = {
+  def buildElastic(req:ServiceRequest,rawset:RDD[Map[String,String]]):RDD[(Int,String)] = {
  
-    val spec = sc.broadcast(Fields.get(uid))
+    val spec = sc.broadcast(Fields.get(req))
     val dataset = rawset.map(data => {
       
       val site = data(spec.value("site")._1)
@@ -80,7 +82,7 @@ class SequenceModel(@transient sc:SparkContext) extends Serializable {
 
   }
   
-  def buildFile(uid:String,rawset:RDD[String]):RDD[(Int,String)] = {
+  def buildFile(req:ServiceRequest,rawset:RDD[String]):RDD[(Int,String)] = {
     
     rawset.map(valu => {
       
@@ -91,9 +93,9 @@ class SequenceModel(@transient sc:SparkContext) extends Serializable {
     
   }
   
-  def buildJDBC(uid:String,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
+  def buildJDBC(req:ServiceRequest,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
     
-    val fieldspec = Fields.get(uid)
+    val fieldspec = Fields.get(req)
     val fields = fieldspec.map(kv => kv._2._1).toList    
 
     val spec = sc.broadcast(fieldspec)
@@ -147,7 +149,7 @@ class SequenceModel(@transient sc:SparkContext) extends Serializable {
 
   }
   
-  def buildPiwik(uid:String,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
+  def buildPiwik(req:ServiceRequest,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
     
     val rows = rawset.map(row => {
       
