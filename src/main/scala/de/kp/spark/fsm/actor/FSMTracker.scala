@@ -19,9 +19,10 @@ package de.kp.spark.fsm.actor
  */
 
 import de.kp.spark.core.model._
+import de.kp.spark.core.io.ElasticWriter
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF,ElasticWriter}
+import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
