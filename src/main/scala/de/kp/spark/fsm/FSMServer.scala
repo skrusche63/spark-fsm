@@ -22,38 +22,41 @@ import akka.actor.{ActorSystem,Props}
 import com.typesafe.config.ConfigFactory
 
 import de.kp.spark.core.SparkService
-import de.kp.spark.fsm.actor.FSMMaster
+import de.kp.spark.fsm.api.{AkkaApi,RestApi}
 
 /**
  * FSMService is an Akka Remoting based Frequent Sequence
  * Mining Service that actually supports SPADE and TSR
  */
-object FSMService {
+object FSMServer extends SparkService {
+  
+  private val sc = createCtxLocal("SeriesContext",Configuration.spark)      
 
   def main(args: Array[String]) {
     
-    val name:String = "fsm-server"
+    /**
+     * REST API 
+     */
+    val httpSystem = ActorSystem("rest-server")
+    sys.addShutdownHook(httpSystem.shutdown)
+    
+    val (host,port) = Configuration.rest
+    new RestApi(host,port,httpSystem,sc).start()
+ 
+    println("REST API activated.")
+    
+    /**
+     * AKKA API 
+     */
     val conf:String = "server.conf"
 
-    val server = new FSMService(conf, name)
-    while (true) {}
+    val akkaSystem = ActorSystem("akka-server",ConfigFactory.load(conf))
+    sys.addShutdownHook(akkaSystem.shutdown)
     
-    server.shutdown
+    new AkkaApi(akkaSystem,sc).start()
+ 
+    println("AKKA API activated.")
       
   }
 
-}
-
-class FSMService(conf:String, name:String) extends SparkService {
-
-  val system = ActorSystem(name, ConfigFactory.load(conf))
-  sys.addShutdownHook(system.shutdown)
-  
-  /* Create Spark context */
-  private val sc = createCtxLocal("FSMContext",Configuration.spark)      
-
-  val master = system.actorOf(Props(new FSMMaster(sc)), name="fsm-master")
-
-  def shutdown = system.shutdown()
-  
 }

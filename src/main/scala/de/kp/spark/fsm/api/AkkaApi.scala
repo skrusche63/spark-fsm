@@ -1,4 +1,4 @@
-package de.kp.spark.fsm.rest
+package de.kp.spark.fsm.api
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-FSM project
@@ -18,27 +18,16 @@ package de.kp.spark.fsm.rest
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import akka.actor.ActorSystem
+import org.apache.spark.SparkContext
+import akka.actor.{ActorSystem,Props}
 
-import de.kp.spark.core.SparkService
-import de.kp.spark.fsm.{Configuration}
+import de.kp.spark.fsm.actor.FSMMaster
 
-object RestServer extends SparkService {
-  
-  /* Create Spark context */
-  private val sc = createCtxLocal("FSMContext",Configuration.spark)      
-  
-  private def start(args:Array[String],system:ActorSystem) {
+class AkkaApi(system:ActorSystem,@transient val sc:SparkContext) {
 
-    val (host,port) = Configuration.rest
-    
-    /* Start REST API */
-    new RestApi(host,port,system,sc).start()
-      
+  val master = system.actorOf(Props(new FSMMaster(sc)), name="series-master")
+
+  def start() {
+     while (true) {}   
   }
-  
-  def main(args: Array[String]) {
-    start(args, ActorSystem("RestServer"))
-  }
-  
 }

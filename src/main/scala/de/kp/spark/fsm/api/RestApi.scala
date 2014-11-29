@@ -1,4 +1,4 @@
-package de.kp.spark.fsm.rest
+package de.kp.spark.fsm.api
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-FSM project
@@ -52,7 +52,7 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
   override def actorRefFactory:ActorSystem = system
 
   val (duration,retries,time) = Configuration.actor   
-  val master = system.actorOf(Props(new FSMMaster(sc)), name="FSMMaster")
+  val master = system.actorOf(Props(new FSMMaster(sc)), name="series-master")
 
   def start() {
     RestService.start(routes,system,host,port)

@@ -24,11 +24,12 @@ import de.kp.spark.core.model._
 import de.kp.spark.core.redis.RedisCache
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.RemoteContext
+import de.kp.spark.fsm.{Configuration,RemoteContext}
 
 abstract class BaseActor extends Actor with ActorLogging {
 
-  protected val cache = new RedisCache()
+  val (host,port) = Configuration.redis
+  val cache = new RedisCache(host,port.toInt)
 
   /**
    * Notify all registered listeners about a certain status

@@ -23,13 +23,16 @@ import java.util.Date
 import de.kp.spark.core.model._
 import de.kp.spark.core.redis.RedisClient
 
+import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.model._
 
 import scala.collection.JavaConversions._
 
 class RedisSink {
 
-  val client  = RedisClient()
+  val (host,port) = Configuration.redis
+  val client = RedisClient(host,port.toInt)
+
   val service = "fsm"
   
   def addPatterns(req:ServiceRequest, patterns:FSMPatterns) {
