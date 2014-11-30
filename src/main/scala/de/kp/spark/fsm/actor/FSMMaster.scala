@@ -90,7 +90,7 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
       case "index" => ask(actor("indexer"),req).mapTo[ServiceResponse]
         
       case "train"  => ask(actor("miner"),req).mapTo[ServiceResponse]
-      case "status" => ask(actor("miner"),req).mapTo[ServiceResponse]
+      case "status" => ask(actor("monitor"),req).mapTo[ServiceResponse]
 
       case "register"  => ask(actor("registrar"),req).mapTo[ServiceResponse]
       case "track"  => ask(actor("tracker"),req).mapTo[ServiceResponse]
@@ -110,6 +110,8 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
       case "indexer" => context.actorOf(Props(new FSMIndexer()))
   
       case "miner" => context.actorOf(Props(new FSMMiner(sc)))
+        
+      case "monitor" => context.actorOf(Props(new FSMMonitor()))
         
       case "questor" => context.actorOf(Props(new FSMQuestor()))
         

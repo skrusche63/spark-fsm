@@ -19,6 +19,7 @@ package de.kp.spark.fsm.io
 */
 
 import org.elasticsearch.common.xcontent.XContentBuilder
+import de.kp.spark.core.elastic.ElasticItemBuilder
 
 object ElasticBuilderFactory {
   /*
