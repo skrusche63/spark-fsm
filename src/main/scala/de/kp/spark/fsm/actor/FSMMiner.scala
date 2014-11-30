@@ -57,7 +57,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
           response.onSuccess {
             case result => {
               
-              origin ! Serializer.serializeResponse(result)
+              origin ! result
               context.stop(self)
               
             }
@@ -68,7 +68,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
               
               val resp = failure(req,throwable.toString)
               
-              origin ! Serializer.serializeResponse(resp)	 
+              origin ! resp
               context.stop(self)
               
             }	  
@@ -86,7 +86,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
             
           }
            
-          origin ! Serializer.serializeResponse(resp)
+          origin ! resp
           context.stop(self)
            
         }
@@ -95,7 +95,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
            
           val msg = Messages.TASK_IS_UNKNOWN(uid,req.task)
           
-          origin ! Serializer.serializeResponse(failure(req,msg))
+          origin ! failure(req,msg)
           context.stop(self)
            
         }

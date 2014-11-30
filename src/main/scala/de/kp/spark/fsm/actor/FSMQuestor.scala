@@ -59,7 +59,7 @@ class FSMQuestor extends BaseActor {
             
           }
            
-          origin ! Serializer.serializeResponse(resp)
+          origin ! resp
           context.stop(self)
           
         }
@@ -86,7 +86,7 @@ class FSMQuestor extends BaseActor {
             
           }
            
-          origin ! Serializer.serializeResponse(resp)
+          origin ! resp
           context.stop(self)
           
         }
@@ -105,7 +105,7 @@ class FSMQuestor extends BaseActor {
             
           }
            
-          origin ! Serializer.serializeResponse(resp)
+          origin ! resp
           context.stop(self)
           
         }
@@ -124,7 +124,7 @@ class FSMQuestor extends BaseActor {
             
           }
            
-          origin ! Serializer.serializeResponse(resp)
+          origin ! resp
           context.stop(self)
           
         }
@@ -134,7 +134,7 @@ class FSMQuestor extends BaseActor {
           val origin = sender               
           val msg = Messages.REQUEST_IS_UNKNOWN()          
           
-          origin ! Serializer.serializeResponse(failure(null,msg))
+          origin ! failure(null,msg)
           context.stop(self)
 
         }
@@ -148,7 +148,7 @@ class FSMQuestor extends BaseActor {
       val origin = sender               
       val msg = Messages.REQUEST_IS_UNKNOWN()          
           
-      origin ! Serializer.serializeResponse(failure(null,msg))
+      origin ! failure(null,msg)
       context.stop(self)
 
     }

@@ -52,7 +52,7 @@ class FSMRegistrar extends BaseActor {
         case throwable:Throwable => failure(req,throwable.getMessage)
       }
       
-      origin ! Serializer.serializeResponse(response)
+      origin ! response
 
     }
     

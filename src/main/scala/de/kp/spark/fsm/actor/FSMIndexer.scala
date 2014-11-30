@@ -62,7 +62,7 @@ class FSMIndexer extends BaseActor {
         val response = new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)	
       
         val origin = sender
-        origin ! Serializer.serializeResponse(response)
+        origin ! response
       
       } catch {
         
@@ -74,7 +74,7 @@ class FSMIndexer extends BaseActor {
           val response = new ServiceResponse(req.service,req.task,data,ResponseStatus.FAILURE)	
       
           val origin = sender
-          origin ! Serializer.serializeResponse(response)
+          origin ! response
           
         }
       
