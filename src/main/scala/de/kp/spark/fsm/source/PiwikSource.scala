@@ -21,18 +21,18 @@ package de.kp.spark.fsm.source
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.model._
+
 import de.kp.spark.core.io.JdbcReader
 import de.kp.spark.core.source.JdbcSource
 
-import de.kp.spark.fsm.Configuration
+import de.kp.spark.core.Configuration
 
 /**
  * PiwikSource is an extension of the common JdbcSource that holds Piwik specific
  * data about fields and types on the server side for convenience.
  */
 class PiwikSource(@transient sc:SparkContext) extends JdbcSource(sc) {
-   
-  protected val (url,database,user,password) = Configuration.mysql
 
   private val LOG_ITEM_FIELDS = List(
       "idsite",
@@ -49,17 +49,18 @@ class PiwikSource(@transient sc:SparkContext) extends JdbcSource(sc) {
       "quantity",
       "deleted")
 
-  override def connect(params:Map[String,Any],fields:List[String]=List.empty[String]):RDD[Map[String,Any]] = {
+  override def connect(config:Configuration,req:ServiceRequest,fields:List[String]=List.empty[String]):RDD[Map[String,Any]] = {
     
     /* Retrieve site, start & end date from params */
-    val site = params("site").asInstanceOf[Int]
+    val site = req.data("site").asInstanceOf[Int]
     
-    val startdate = params("startdate").asInstanceOf[String]
-    val enddate   = params("enddate").asInstanceOf[String]
+    val startdate = req.data("startdate").asInstanceOf[String]
+    val enddate   = req.data("enddate").asInstanceOf[String]
 
+    val (url,database,user,password) = config.mysql
     val sql = query(database,site.toString,startdate,enddate)
     
-    val rawset = new JdbcReader(sc,site,sql).read(LOG_ITEM_FIELDS)    
+    val rawset = new JdbcReader(sc,config,site,sql).read(LOG_ITEM_FIELDS)    
     rawset.filter(row => (isDeleted(row) == false))
   
   }

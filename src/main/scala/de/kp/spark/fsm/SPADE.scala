@@ -42,8 +42,8 @@ object SPADE extends Serializable {
     
     val model = new SequenceModel(sc)
     
-    val path = Configuration.file()
-    val rawset = new FileSource(sc).connect(null,path)
+    val path = Configuration.file(0)
+    val rawset = new FileSource(sc).connect(path,null)
     
     val dataset = model.buildFile(null,rawset)
     
