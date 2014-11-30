@@ -20,11 +20,12 @@ package de.kp.spark.fsm.sink
 
 import java.util.{Date,UUID}
 
+import de.kp.spark.core.Names
+
 import de.kp.spark.core.model._
 import de.kp.spark.core.io.ElasticWriter
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.io.{ElasticBuilderFactory => EBF}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashMap
@@ -71,17 +72,19 @@ class ElasticSink {
       val rid = UUID.randomUUID().toString()
       val source = new java.util.HashMap[String,Object]()    
       
-      source += EBF.TIMESTAMP_FIELD -> timestamp.asInstanceOf[Object]
-      source += EBF.UID_FIELD -> uid
+      source += Names.TIMESTAMP_FIELD -> timestamp.asInstanceOf[Object]
+      source += Names.UID_FIELD -> uid
       
-      source += EBF.RULE_FIELD -> rid
+      source += Names.RULE_FIELD -> rid
         
-      source += EBF.ANTECEDENT_FIELD -> rule.antecedent
-      source += EBF.CONSEQUENT_FIELD -> rule.consequent
+      source += Names.ANTECEDENT_FIELD -> rule.antecedent
+      source += Names.CONSEQUENT_FIELD -> rule.consequent
         
-      source += EBF.SUPPORT_FIELD -> rule.support.asInstanceOf[Object]
-      source += EBF.CONFIDENCE_FIELD -> rule.confidence.asInstanceOf[Object]
-        
+      source += Names.SUPPORT_FIELD -> rule.support.asInstanceOf[Object]
+      source += Names.CONFIDENCE_FIELD -> rule.confidence.asInstanceOf[Object]
+         
+      source += Names.WEIGHT_FIELD -> (1.toDouble / rule.antecedent.length).asInstanceOf[Object]
+       
       /*
        * Writing this source to the respective index throws an
        * exception in case of an error; note, that the writer is
