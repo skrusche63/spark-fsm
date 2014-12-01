@@ -54,6 +54,8 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
   val (duration,retries,time) = Configuration.actor   
   val master = system.actorOf(Props(new FSMMaster(sc)), name="series-master")
 
+  private val service = "series"
+    
   def start() {
     RestService.start(routes,system,host,port)
   }
@@ -63,6 +65,13 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
    */
   private def routes:Route = {
 
+    path("admin" / Segment) {subject =>  
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doAdmin(ctx,subject)
+	    }
+	  }
+    }  ~  
     path("get" / Segment) {subject => 
 	  post {
 	    respondWithStatus(OK) {
@@ -84,13 +93,6 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
 	    }
 	  }
     }  ~ 
-    path("status") { 
-	  post {
-	    respondWithStatus(OK) {
-	      ctx => doStatus(ctx)
-	    }
-	  }
-    }  ~ 
     path("track") {
 	  post {
 	    respondWithStatus(OK) {
@@ -107,16 +109,29 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     }
   
   }
+  
+  private def doAdmin[T](ctx:RequestContext,subject:String) = {
+    
+    subject match {
+      
+      case "fields" => doRequest(ctx,service,subject)
+      case "status" => doRequest(ctx,service,subject)
+      
+      case _ => {}
+      
+    }
+    
+  }
 
   private def doGet[T](ctx:RequestContext,subject:String) = {
 	    
     subject match {
 
-      case "antecedent" => doRequest(ctx,"series","get:antecedent")
-      case "consequent" => doRequest(ctx,"series","get:consequent")
+      case "antecedent" => doRequest(ctx,service,"get:antecedent")
+      case "consequent" => doRequest(ctx,service,"get:consequent")
 
-      case "pattern" => doRequest(ctx,"series","get:pattern")     
-	  case "rule"    => doRequest(ctx,"series","get:rule")
+      case "pattern" => doRequest(ctx,service,"get:pattern")     
+	  case "rule"    => doRequest(ctx,service,"get:rule")
 	      
 	  case _ => {}
 	  
@@ -128,9 +143,9 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     
     subject match {
       
-      case "item" => doRequest(ctx,"series","index:item")
+      case "item" => doRequest(ctx,service,"index:item")
       
-      case "rule" => doRequest(ctx,"series","index:rule")
+      case "rule" => doRequest(ctx,service,"index:rule")
       
       case _ => {}
       
@@ -138,13 +153,11 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     
   }
   
-  private def doRegister[T](ctx:RequestContext) = doRequest(ctx,"series","register")
+  private def doRegister[T](ctx:RequestContext) = doRequest(ctx,service,"register")
   
-  private def doTrack[T](ctx:RequestContext) = doRequest(ctx,"series","track")
+  private def doTrack[T](ctx:RequestContext) = doRequest(ctx,service,"track")
 
-  private def doTrain[T](ctx:RequestContext) = doRequest(ctx,"series","train")
-
-  private def doStatus[T](ctx:RequestContext) = doRequest(ctx,"series","status")
+  private def doTrain[T](ctx:RequestContext) = doRequest(ctx,service,"train")
   
   private def doRequest[T](ctx:RequestContext,service:String,task:String="train") = {
      

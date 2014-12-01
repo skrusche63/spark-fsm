@@ -18,7 +18,7 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import de.kp.spark.core.actor.StatusMonitor
+import de.kp.spark.core.actor.FieldQuestor
 import de.kp.spark.fsm.Configuration
 
-class FSMMonitor extends StatusMonitor(Configuration)
+class FieldMonitor extends FieldQuestor(Configuration)

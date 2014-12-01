@@ -91,11 +91,13 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
 	  
     req.task.split(":")(0) match {
         
+      case "fields" => ask(actor("fields"),req).mapTo[ServiceResponse]
+
       case "get" => ask(actor("questor"),req).mapTo[ServiceResponse]
       case "index" => ask(actor("indexer"),req).mapTo[ServiceResponse]
         
       case "train"  => ask(actor("miner"),req).mapTo[ServiceResponse]
-      case "status" => ask(actor("monitor"),req).mapTo[ServiceResponse]
+      case "status" => ask(actor("status"),req).mapTo[ServiceResponse]
 
       case "register"  => ask(actor("registrar"),req).mapTo[ServiceResponse]
       case "track"  => ask(actor("tracker"),req).mapTo[ServiceResponse]
@@ -111,16 +113,18 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
   private def actor(worker:String):ActorRef = {
     
     worker match {
-  
+         
+      case "fields" => context.actorOf(Props(new FieldMonitor()))
+ 
       case "indexer" => context.actorOf(Props(new FSMIndexer()))
   
       case "miner" => context.actorOf(Props(new FSMMiner(sc)))
         
-      case "monitor" => context.actorOf(Props(new FSMMonitor()))
-        
       case "questor" => context.actorOf(Props(new FSMQuestor()))
         
       case "registrar" => context.actorOf(Props(new FSMRegistrar()))
+        
+      case "status" => context.actorOf(Props(new StatusMonitor()))
    
       case "tracker" => context.actorOf(Props(new FSMTracker()))
       
