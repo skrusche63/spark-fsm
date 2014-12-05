@@ -26,6 +26,8 @@ import akka.pattern.ask
 import akka.util.Timeout
 
 import akka.actor.{OneForOneStrategy, SupervisorStrategy}
+
+import de.kp.spark.core.actor._
 import de.kp.spark.core.model._
 
 import de.kp.spark.fsm.Configuration
@@ -122,11 +124,11 @@ class FSMMaster(@transient val sc:SparkContext) extends BaseActor {
         
       case "questor" => context.actorOf(Props(new FSMQuestor()))
         
-      case "registrar" => context.actorOf(Props(new FSMRegistrar()))
+      case "registrar" => context.actorOf(Props(new BaseRegistrar(Configuration)))
         
-      case "status" => context.actorOf(Props(new StatusMonitor()))
+      case "status" => context.actorOf(Props(new StatusQuestor(Configuration)))
    
-      case "tracker" => context.actorOf(Props(new FSMTracker()))
+      case "tracker" => context.actorOf(Props(new BaseTracker(Configuration)))
       
       case _ => null
       
