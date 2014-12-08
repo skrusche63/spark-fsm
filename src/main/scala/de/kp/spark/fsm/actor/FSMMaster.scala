@@ -19,94 +19,16 @@ package de.kp.spark.fsm.actor
 */
 
 import org.apache.spark.SparkContext
-
 import akka.actor.{ActorRef,Props}
-
-import akka.pattern.ask
-import akka.util.Timeout
-
-import akka.actor.{OneForOneStrategy, SupervisorStrategy}
 
 import de.kp.spark.core.actor._
 import de.kp.spark.core.model._
 
 import de.kp.spark.fsm.Configuration
-import de.kp.spark.fsm.model._
 
-import scala.concurrent.duration.DurationInt
-import scala.concurrent.Future
-
-class FSMMaster(@transient sc:SparkContext) extends BaseActor {
+class FSMMaster(@transient sc:SparkContext) extends BaseMaster(Configuration) {
   
-  /* Load configuration for routers */
-  val (duration,retries,time) = Configuration.actor   
-      
-  implicit val ec = context.dispatcher
-  implicit val timeout:Timeout = DurationInt(time).second
-
-  override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries=retries,withinTimeRange = DurationInt(duration).minutes) {
-    case _ : Exception => SupervisorStrategy.Restart
-  }
-  
-  def receive = {
-    
-    case req:String => {
-	  	    
-	  val origin = sender
-
-	  val deser = Serializer.deserializeRequest(req)
-	  val response = execute(deser)
-	  
-      response.onSuccess {
-        case result => origin ! serialize(result)
-      }
-      response.onFailure {
-        case result => origin ! serialize(failure(deser,Messages.GENERAL_ERROR(deser.data("uid"))))	      
-	  }
-      
-    }
-    
-    case req:ServiceRequest => {
-	  	    
-	  val origin = sender
-
-	  val response = execute(req)
-      response.onSuccess {
-        case result => origin ! result
-      }
-      response.onFailure {
-        case result => origin ! failure(req,Messages.GENERAL_ERROR(req.data("uid")))	      
-	  }
-      
-    }
-  
-    case _ => {
- 
-      val msg = Messages.REQUEST_IS_UNKNOWN()          
-      log.error(msg)
-     
-    }
-    
-  }
-
-  private def execute(req:ServiceRequest):Future[ServiceResponse] = {
-	
-    try {
-      
-      val task = req.task.split(":")(0)
-      ask(actor(task),req).mapTo[ServiceResponse]
-    
-    } catch {
-      
-      case e:Exception => {
-        Future {failure(req,e.getMessage)}         
-      }
-    
-    }
-    
-  }
-  
-  private def actor(worker:String):ActorRef = {
+  protected def actor(worker:String):ActorRef = {
     
     worker match {
       /*
