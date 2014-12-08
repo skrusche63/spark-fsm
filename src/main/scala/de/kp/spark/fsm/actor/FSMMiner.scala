@@ -75,22 +75,7 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseActor {
           }
          
         }
-       
-        case "status" => {
-
-          val resp = if (cache.statusExists(req) == false) {           
-            failure(req,Messages.TASK_DOES_NOT_EXIST(uid))           
-            
-          } else {   
-            status(req)
-            
-          }
-           
-          origin ! resp
-          context.stop(self)
-           
-        }
-        
+         
         case _ => {
            
           val msg = Messages.TASK_IS_UNKNOWN(uid,req.task)

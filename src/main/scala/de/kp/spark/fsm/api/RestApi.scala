@@ -65,31 +65,44 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
    */
   private def routes:Route = {
 
-    path("admin" / Segment) {subject =>  
+    /*
+     * A 'fields' request supports the retrieval of the field
+     * or metadata specificiations that are associated with
+     * a certain training task (uid).
+     * 
+     * The approach actually supported enables the registration
+     * of field specifications on a per uid basis, i.e. each
+     * task may have its own fields. Requests that have to
+     * refer to the same fields must provide the SAME uid
+     */
+    path("fields") {  
 	  post {
 	    respondWithStatus(OK) {
-	      ctx => doAdmin(ctx,subject)
+	      ctx => doFields(ctx)
 	    }
 	  }
     }  ~  
-    path("get" / Segment) {subject => 
-	  post {
-	    respondWithStatus(OK) {
-	      ctx => doGet(ctx,subject)
-	    }
-	  }
-    }  ~ 
-    path("index" / Segment) {subject =>  
-	  post {
-	    respondWithStatus(OK) {
-	      ctx => doIndex(ctx,subject)
-	    }
-	  }
-    }  ~ 
+    /*
+     * A 'register' request supports the registration of a field
+     * or metadata specification that describes the fields used
+     * to span the training dataset.
+     */
     path("register") { 
 	  post {
 	    respondWithStatus(OK) {
 	      ctx => doRegister(ctx)
+	    }
+	  }
+    }  ~ 
+    /*
+     * 'index' and 'track' requests refer to the tracking functionality
+     * of the Series Analysis engine; while 'index' prepares a certain 
+     * Elasticsearch index, 'track' is used to gather training data.
+     */
+    path("index" / Segment) {subject =>  
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doIndex(ctx,subject)
 	    }
 	  }
     }  ~ 
@@ -100,6 +113,25 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
 	    }
 	  }
     }  ~  
+    /*
+     * A 'status' request supports the retrieval of the status
+     * with respect to a certain training task (uid). The latest
+     * status or all stati of a certain task are returned.
+     */
+    path("status" / Segment) {subject =>  
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doStatus(ctx,subject)
+	    }
+	  }
+    }  ~ 
+    path("get" / Segment) {subject => 
+	  post {
+	    respondWithStatus(OK) {
+	      ctx => doGet(ctx,subject)
+	    }
+	  }
+    }  ~ 
     path("train") {
 	  post {
 	    respondWithStatus(OK) {
@@ -109,18 +141,59 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     }
   
   }
+
+  /**
+   * 'fields' and 'register' requests refer to the metadata management of the
+   * Series Analysis engine; for a certain task (uid) and a specific model (name), 
+   * a specification of the respective data fields can be registered and retrieved 
+   * from a Redis database.
+   */
+  private def doFields[T](ctx:RequestContext) = doRequest(ctx,service,"fields:item")
   
-  private def doAdmin[T](ctx:RequestContext,subject:String) = {
+  private def doRegister[T](ctx:RequestContext) = doRequest(ctx,service,"register:item")
+  /**
+   * 'index' & 'track' requests support data registration in an Elasticsearch
+   * index; while items are can be provided via the REST interface, rules are
+   * built by the Series Analysis engine and then registered in the index.
+   */
+ 
+  private def doIndex[T](ctx:RequestContext,subject:String) = {
     
     subject match {
       
-      case "fields" => doRequest(ctx,service,subject)
-      case "status" => doRequest(ctx,service,subject)
+      case "item" => doRequest(ctx,service,"index:item")
+      case "rule" => doRequest(ctx,service,"index:rule")
       
       case _ => {}
       
     }
     
+  }
+  
+  private def doTrack[T](ctx:RequestContext) = doRequest(ctx,service,"track:item")
+  /**
+   * 'status' is an administration request to determine whether a certain data
+   * mining task has been finished or not; the only parameter required for status 
+   * requests is the unique identifier of a certain task
+   */
+  private def doStatus[T](ctx:RequestContext,subject:String) = {
+    
+    subject match {
+      /*
+       * Retrieve the 'latest' status information about a certain
+       * data mining or model building task.
+       */
+      case "latest" => doRequest(ctx,service,"status:latest")
+      /*
+       * Retrieve 'all' stati assigned to a certain data mining
+       * or model building task.
+       */
+      case "all" => doRequest(ctx,service,"status:all")
+      
+      case _ => {/* do nothing */}
+    
+    }
+  
   }
 
   private def doGet[T](ctx:RequestContext,subject:String) = {
@@ -138,28 +211,10 @@ class RestApi(host:String,port:Int,system:ActorSystem,@transient val sc:SparkCon
     }
     
   }
- 
-  private def doIndex[T](ctx:RequestContext,subject:String) = {
-    
-    subject match {
-      
-      case "item" => doRequest(ctx,service,"index:item")
-      
-      case "rule" => doRequest(ctx,service,"index:rule")
-      
-      case _ => {}
-      
-    }
-    
-  }
-  
-  private def doRegister[T](ctx:RequestContext) = doRequest(ctx,service,"register")
-  
-  private def doTrack[T](ctx:RequestContext) = doRequest(ctx,service,"track:item")
 
   private def doTrain[T](ctx:RequestContext) = doRequest(ctx,service,"train")
   
-  private def doRequest[T](ctx:RequestContext,service:String,task:String="train") = {
+  private def doRequest[T](ctx:RequestContext,service:String,task:String) = {
      
     val request = new ServiceRequest(service,task,getRequest(ctx))
     implicit val timeout:Timeout = DurationInt(time).second
