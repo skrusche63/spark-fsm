@@ -21,8 +21,10 @@ package de.kp.spark.fsm.source
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.Names
+
 import de.kp.spark.core.model._
-import de.kp.spark.core.source.{ElasticSource,FileSource,JdbcSource}
+import de.kp.spark.core.source._
 
 import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.model.Sources
@@ -41,9 +43,9 @@ class SequenceSource (@transient sc:SparkContext) {
   
   def get(req:ServiceRequest):RDD[(Int,String)] = {
     
-    val uid = req.data("uid")
+    val uid = req.data(Names.REQ_UID)
     
-    val source = req.data("source")
+    val source = req.data(Names.REQ_SOURCE)
     source match {
       
       /* 
@@ -64,7 +66,7 @@ class SequenceSource (@transient sc:SparkContext) {
        */    
       case Sources.FILE => {
         
-        val rawset = new FileSource(sc).connect(config.file(0),req)
+        val rawset = new FileSource(sc).connect(config.input(0),req)
         model.buildFile(req,rawset)
         
       }
@@ -79,6 +81,19 @@ class SequenceSource (@transient sc:SparkContext) {
         
         val rawset = new JdbcSource(sc).connect(config,req,fields)
         model.buildJDBC(req,rawset)
+        
+      }
+      /*
+       * Retrieve sequence database persisted as a parquet file from HDFS; 
+       * the configuration parameters are retrieved from the service 
+       * configuration
+       */
+      case Sources.PARQUET => {
+    
+        val fields = Fields.get(req).map(kv => kv._2._1).toList    
+        
+        val rawset = new ParquetSource(sc).connect(config.input(0),req,fields)
+        model.buildParquet(req,rawset)
         
       }
       /*

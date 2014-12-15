@@ -18,6 +18,7 @@ package de.kp.spark.fsm.actor
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
 import de.kp.spark.fsm.model._
@@ -33,26 +34,27 @@ class FSMQuestor extends BaseActor {
     case req:ServiceRequest => {
       
       val origin = sender    
-      val uid = req.data("uid")
+      val uid = req.data(Names.REQ_UID)
       
-      req.task match {
+      val Array(task,topic) = req.task.split(":")
+      topic match {
         
-        case "get:antecedent" => {
+        case "antecedent" => {
 
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
 
-            if (req.data.contains("items") == false) {
+            if (req.data.contains(Names.REQ_ITEMS) == false) {
                failure(req,Messages.NO_ITEMS_PROVIDED(uid))
              
              } else {
 
-               val items = req.data("items").split(",").map(_.toInt).toList
+               val items = req.data(Names.REQ_ITEMS).split(",").map(_.toInt).toList
                val rules = sink.rulesByAntecedent(uid,items)
                
-               val data = Map("uid" -> uid, "rule" -> rules)
+               val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
                new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
              
              }
@@ -64,22 +66,22 @@ class FSMQuestor extends BaseActor {
           
         }
         
-        case "get:consequent" => {
+        case "consequent" => {
 
           val resp = if (sink.rulesExist(uid) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
 
-            if (req.data.contains("items") == false) {
+            if (req.data.contains(Names.REQ_ITEMS) == false) {
                failure(req,Messages.NO_ITEMS_PROVIDED(uid))
              
              } else {
 
-               val items = req.data("items").split(",").map(_.toInt).toList
+               val items = req.data(Names.REQ_ITEMS).split(",").map(_.toInt).toList
                val rules = sink.rulesByConsequent(uid,items)
                
-               val data = Map("uid" -> uid, "rule" -> rules)
+               val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
                new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
              
              }
@@ -91,7 +93,7 @@ class FSMQuestor extends BaseActor {
           
         }
 
-        case "get:pattern" => {
+        case "pattern" => {
 
           val resp = if (sink.patternsExist(uid) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
@@ -100,7 +102,7 @@ class FSMQuestor extends BaseActor {
             
             val patterns = sink.patterns(uid)
                
-            val data = Map("uid" -> uid, "pattern" -> patterns)
+            val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> patterns)
             new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
             
           }
@@ -119,7 +121,7 @@ class FSMQuestor extends BaseActor {
             
             val rules = sink.rules(uid)
                
-            val data = Map("uid" -> uid, "rule" -> rules)
+            val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
             new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
             
           }

@@ -21,6 +21,7 @@ package de.kp.spark.fsm.actor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
+import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
 import de.kp.spark.fsm.TSR
@@ -38,18 +39,18 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
     case req:ServiceRequest => {
 
       val params = properties(req)
+      val missing = (params == null)
 
       /* Send response to originator of request */
-      sender ! response(req, (params == 0.0))
+      sender ! response(req, missing)
 
-      if (params != null) {
+      if (missing == false) {
         /* Register status */
-        cache.addStatus(req,ResponseStatus.STARTED)
+        cache.addStatus(req,ResponseStatus.MINING_STARTED)
  
         try {
           
           val dataset = new SequenceSource(sc).get(req)
-          cache.addStatus(req,ResponseStatus.DATASET)
           
           val (k,minconf) = params     
           findRules(req,dataset,k,minconf)
@@ -91,10 +92,10 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
     saveRules(req,new FSMRules(rules))
           
     /* Update status */
-    cache.addStatus(req,ResponseStatus.FINISHED)
+    cache.addStatus(req,ResponseStatus.MINING_FINISHED)
 
     /* Notify potential listeners */
-    notify(req,ResponseStatus.FINISHED)
+    notify(req,ResponseStatus.MINING_FINISHED)
 
   }  
   
@@ -103,9 +104,9 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
     val redis = new RedisSink()
     redis.addRules(req,rules)
     
-    if (req.data.contains("sink") == false) return
+    if (req.data.contains(Names.REQ_SINK) == false) return
     
-    val sink = req.data("sink")
+    val sink = req.data(Names.REQ_SINK)
     if (Sinks.isSink(sink) == false) return
     
     sink match {

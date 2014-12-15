@@ -36,20 +36,19 @@ class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
     case req:ServiceRequest => {
       
       val params = properties(req)
+      val missing = (params == 0.0)
 
       /* Send response to originator of request */
-      sender ! response(req, (params == 0.0))
+      sender ! response(req, missing)
 
-      if (params != null) {
+      if (missing == false) {
         /* Register status */
-        cache.addStatus(req,ResponseStatus.STARTED)
+        cache.addStatus(req,ResponseStatus.MINING_STARTED)
  
         try {
           
           val dataset = new SequenceSource(sc).get(req)
- 
-          cache.addStatus(req,ResponseStatus.DATASET)
-          
+         
           val support = params     
           findPatterns(req,dataset,support)
 
@@ -91,10 +90,10 @@ class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
     savePatterns(req,new FSMPatterns(patterns))
           
     /* Update status */
-    cache.addStatus(req,ResponseStatus.FINISHED)
+    cache.addStatus(req,ResponseStatus.MINING_FINISHED)
 
     /* Notify potential listeners */
-    notify(req,ResponseStatus.FINISHED)
+    notify(req,ResponseStatus.MINING_FINISHED)
 
   }  
   

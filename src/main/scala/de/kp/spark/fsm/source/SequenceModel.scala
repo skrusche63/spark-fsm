@@ -148,7 +148,63 @@ class SequenceModel(@transient sc:SparkContext) extends Serializable {
     sequences.zip(ids).map(valu => (valu._2.toInt,valu._1)).cache()
 
   }
-  
+   
+  def buildParquet(req:ServiceRequest,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
+    
+    val fieldspec = Fields.get(req)
+    val fields = fieldspec.map(kv => kv._2._1).toList    
+
+    val spec = sc.broadcast(fieldspec)
+    val dataset = rawset.map(data => {
+      
+      val site = data(spec.value("site")._1).asInstanceOf[String]
+      val timestamp = data(spec.value("timestamp")._1).asInstanceOf[Long]
+
+      val user = data(spec.value("user")._1).asInstanceOf[String] 
+      val group = data(spec.value("group")._1).asInstanceOf[String]
+      
+      val item  = data(spec.value("item")._1).asInstanceOf[Int]
+      
+      (site,user,group,timestamp,item)
+      
+    })
+    
+    /*
+     * Group dataset by site & user and aggregate all items of a
+     * certain group and all groups into a time-ordered sequence
+     * representation that is compatible to the SPMF format.
+     */
+    val sequences = dataset.groupBy(v => (v._1,v._2)).map(data => {
+      
+      /*
+       * Aggregate all items of a certain group onto a single
+       * line thereby sorting these items in ascending order.
+       * 
+       * And then, sort these items by timestamp in ascending
+       * order.
+       */
+      val groups = data._2.groupBy(_._3).map(group => {
+
+        val timestamp = group._2.head._4
+        val items = group._2.map(_._5.toInt).toList.distinct.sorted.mkString(" ")
+
+        (timestamp,items)
+        
+      }).toList.sortBy(_._1)
+      
+      /*
+       * Finally aggregate all sorted item groups (or sets) in a single
+       * line and use SPMF format
+       */
+      groups.map(_._2).mkString(" -1 ") + " -2"
+      
+    }).coalesce(1)
+
+    val ids = sc.parallelize(Range.Long(0,sequences.count,1),sequences.partitions.size)
+    sequences.zip(ids).map(valu => (valu._2.toInt,valu._1)).cache()
+
+  }
+ 
   def buildPiwik(req:ServiceRequest,rawset:RDD[Map[String,Any]]):RDD[(Int,String)] = {
     
     val rows = rawset.map(row => {

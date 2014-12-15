@@ -69,9 +69,10 @@ object Sources {
   val FILE:String    = "FILE"
   val ELASTIC:String = "ELASTIC" 
   val JDBC:String    = "JDBC"    
+  val PARQUET:String = "PARQUET"
   val PIWIK:String   = "PIWIK"    
 
-  private val sources = List(FILE,ELASTIC,JDBC,PIWIK)
+  private val sources = List(FILE,ELASTIC,JDBC,PARQUET,PIWIK)
   def isSource(source:String):Boolean = sources.contains(source)
   
 }
@@ -108,14 +109,4 @@ object Messages extends BaseMessages {
   
 }
 
-object ResponseStatus extends BaseStatus {
-  
-  val DATASET:String = "dataset"
-    
-  val STARTED:String = "started"
-  val STOPPED:String = "stopped"
-    
-  val FINISHED:String = "finished"
-  val RUNNING:String  = "running"
-    
-}
+object ResponseStatus extends BaseStatus

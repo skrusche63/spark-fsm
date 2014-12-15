@@ -43,6 +43,8 @@ class FSMMaster(@transient sc:SparkContext) extends BaseMaster(Configuration) {
        */  
       case "index" => context.actorOf(Props(new BaseIndexer(Configuration)))
       case "track" => context.actorOf(Props(new BaseTracker(Configuration)))
+
+      case "params" => context.actorOf(Props(new ParamQuestor(Configuration)))
       /*
        * Status management is part of the core functionality and comprises the
        * retrieval of the stati of a certain data mining or model building task
