@@ -30,6 +30,9 @@ import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.sink.RedisSink
 
 class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
+  
+  private val (host,port) = Configuration.redis
+  val redis = new RedisSink(host,port.toInt)
 
   def receive = {
     
@@ -99,8 +102,7 @@ class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
   
   private def savePatterns(req:ServiceRequest,patterns:FSMPatterns) {
     
-    val sink = new RedisSink()
-    sink.addPatterns(req,patterns)
+    redis.addPatterns(req,patterns)
     
   }
   

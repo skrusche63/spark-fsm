@@ -29,28 +29,14 @@ case class FSMPattern(
   support:Int,itemsets:List[List[Int]])
 
 case class FSMPatterns(items:List[FSMPattern])
-  
-
-case class FSMRule (
-  antecedent:List[Int],consequent:List[Int],support:Int,confidence:Double)
-
-case class FSMRules(items:List[FSMRule])
 
 object Serializer extends BaseSerializer {
     
   /*
    * Support for serialization and deserialization of patterns
    */
-  def serializePatterns(patterns:FSMPatterns):String = write(patterns)
-  
+  def serializePatterns(patterns:FSMPatterns):String = write(patterns)  
   def deserializePatterns(patterns:String):FSMPatterns = read[FSMPatterns](patterns)
-  
-  /*
-   * Support for serialization and deserialization of rules
-   */
-  def serializeRules(rules:FSMRules):String = write(rules)
-  
-  def deserializeRules(rules:String):FSMRules = read[FSMRules](rules)
   
 }
 
@@ -100,12 +86,6 @@ object Messages extends BaseMessages {
 
   def PATTERNS_DO_NOT_EXIST(uid:String):String = 
     String.format("""[UID: %s] No patterns found.""", uid)
-
-  def RULES_DO_NOT_EXIST(uid:String):String = 
-    String.format("""[UID: %s] No association rules found.""", uid)
-
-  def TRACKED_ITEM_RECEIVED(uid:String):String = 
-    String.format("""[UID: %s] Tracked item received.""", uid)
   
 }
 

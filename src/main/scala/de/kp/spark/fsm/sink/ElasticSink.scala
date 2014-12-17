@@ -38,7 +38,7 @@ class ElasticSink {
      */
   }
   
-  def addRules(req:ServiceRequest, rules:FSMRules) {
+  def addRules(req:ServiceRequest, rules:Rules) {
  
     val uid = req.data("uid")
     /*

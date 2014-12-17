@@ -31,7 +31,7 @@ class JdbcSink {
   protected val MYSQL_DRIVER = "com.mysql.jdbc.Driver"
   protected val (url,database,user,password) = Configuration.mysql
 
-  def addRules(req:ServiceRequest,rules:FSMRules) {
+  def addRules(req:ServiceRequest,rules:Rules) {
     
     /* Create tables if not exist */
     createTables()
@@ -40,7 +40,7 @@ class JdbcSink {
     
   }
   
-  private def insertRules(req:ServiceRequest,rules:FSMRules) {
+  private def insertRules(req:ServiceRequest,rules:Rules) {
     
     var conn:Connection = null
     var stmt:Statement  = null

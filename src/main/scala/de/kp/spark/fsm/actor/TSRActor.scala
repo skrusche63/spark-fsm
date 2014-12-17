@@ -24,15 +24,18 @@ import org.apache.spark.rdd.RDD
 import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
-import de.kp.spark.fsm.TSR
+import de.kp.spark.fsm.{Configuration,TSR}
 import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.sink.{ElasticSink,JdbcSink,RedisSink}
+import de.kp.spark.fsm.sink._
 
 import scala.collection.JavaConversions._
 
 class TSRActor(@transient val sc:SparkContext) extends BaseActor {
+  
+  private val (host,port) = Configuration.redis
+  val redis = new RedisSink(host,port.toInt)
 
   def receive = {
     
@@ -85,11 +88,11 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
       val support    = rule.getAbsoluteSupport()
       val confidence = rule.getConfidence()
 	
-      new FSMRule(antecedent,consequent,support,confidence)
+      new Rule(antecedent,consequent,support,confidence)
             
     })
           
-    saveRules(req,new FSMRules(rules))
+    saveRules(req,new Rules(rules))
           
     /* Update status */
     cache.addStatus(req,ResponseStatus.MINING_FINISHED)
@@ -99,9 +102,8 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
 
   }  
   
-  private def saveRules(req:ServiceRequest,rules:FSMRules) {
+  private def saveRules(req:ServiceRequest,rules:Rules) {
     
-    val redis = new RedisSink()
     redis.addRules(req,rules)
     
     if (req.data.contains(Names.REQ_SINK) == false) return
