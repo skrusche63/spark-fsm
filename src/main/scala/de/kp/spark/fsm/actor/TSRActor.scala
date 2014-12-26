@@ -80,6 +80,7 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
   
   private def findRules(req:ServiceRequest,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
      
+    val total = dataset.count()
     val rules = TSR.extractRDDRules(dataset,k,minconf).map(rule => {
      
       val antecedent = rule.getItemset1().toList
@@ -88,7 +89,7 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
       val support    = rule.getAbsoluteSupport()
       val confidence = rule.getConfidence()
 	
-      new Rule(antecedent,consequent,support,confidence)
+      new Rule(antecedent,consequent,support,total,confidence)
             
     })
           

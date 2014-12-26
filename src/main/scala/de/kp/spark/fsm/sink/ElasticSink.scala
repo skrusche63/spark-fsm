@@ -59,31 +59,27 @@ class ElasticSink {
       throw new Exception(msg)
       
     }
-    
+   
+    /*
+     * Determine timestamp for the actual set of rules to be indexed
+     */
     val now = new Date()
     val timestamp = now.getTime()
    
     for (rule <- rules.items) {
 
-      /* 
-       * Unique identifier to group all entries 
-       * that refer to the same rule
-       */      
-      val rid = UUID.randomUUID().toString()
       val source = new java.util.HashMap[String,Object]()    
       
       source += Names.TIMESTAMP_FIELD -> timestamp.asInstanceOf[Object]
       source += Names.UID_FIELD -> uid
-      
-      source += Names.RULE_FIELD -> rid
         
       source += Names.ANTECEDENT_FIELD -> rule.antecedent
       source += Names.CONSEQUENT_FIELD -> rule.consequent
         
       source += Names.SUPPORT_FIELD -> rule.support.asInstanceOf[Object]
       source += Names.CONFIDENCE_FIELD -> rule.confidence.asInstanceOf[Object]
-         
-      source += Names.WEIGHT_FIELD -> (1.toDouble / rule.antecedent.length).asInstanceOf[Object]
+
+      source += Names.TOTAL_FIELD -> rule.total.asInstanceOf[Object]
        
       /*
        * Writing this source to the respective index throws an
