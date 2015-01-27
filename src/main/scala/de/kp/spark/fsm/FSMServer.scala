@@ -22,7 +22,7 @@ import akka.actor.{ActorSystem,Props}
 import com.typesafe.config.ConfigFactory
 
 import de.kp.spark.core.SparkService
-import de.kp.spark.fsm.api.{AkkaApi,RestApi}
+import de.kp.spark.fsm.api.AkkaApi
 
 /**
  * FSMService is an Akka Remoting based Frequent Sequence
@@ -33,17 +33,6 @@ object FSMServer extends SparkService {
   private val sc = createCtxLocal("SeriesContext",Configuration.spark)      
 
   def main(args: Array[String]) {
-    
-    /**
-     * REST API 
-     */
-    val httpSystem = ActorSystem("rest-server")
-    sys.addShutdownHook(httpSystem.shutdown)
-    
-    val (host,port) = Configuration.rest
-    new RestApi(host,port,httpSystem,sc).start()
- 
-    println("REST API activated.")
     
     /**
      * AKKA API 
