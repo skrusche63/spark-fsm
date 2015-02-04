@@ -21,12 +21,14 @@ package de.kp.spark.fsm.spec
 import de.kp.spark.core.model._
 import de.kp.spark.core.redis.RedisCache
 
+import de.kp.spark.core.spec.Fields
+
 import de.kp.spark.fsm.Configuration
 
 import scala.xml._
 import scala.collection.mutable.HashMap
 
-object Fields {
+object SequenceSpec extends Fields {
   
   val path = "fieldspec.xml"
 

@@ -19,35 +19,14 @@ package de.kp.spark.fsm
 */
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-
 import org.apache.spark.rdd.RDD
 
-import org.apache.hadoop.io.{LongWritable,Text}
-import org.apache.hadoop.mapred.TextInputFormat
+import de.kp.core.tsr._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
 
-import de.kp.spark.core.source.FileSource
-
-import de.kp.spark.fsm.source.{SequenceModel}
-import de.kp.core.tsr.{Rule,Sequence,TSRAlgorithm,Vertical}
-
 object TSR extends Serializable {
-  
-  def extractFileRules(@transient sc:SparkContext,k:Int, minconf:Double):List[Rule] = {
-    
-    val model = new SequenceModel(sc)
-    
-    val path = Configuration.input(0)
-    val rawset = new FileSource(sc).connect(path,null)
-    
-    val dataset = model.buildFile(null,rawset)
-    
-    extractRDDRules(dataset,k,minconf)
-    
-  }
   
   def extractRDDRules(dataset:RDD[(Int,String)],k:Int, minconf:Double):List[Rule] = {
               

@@ -24,17 +24,21 @@ import org.apache.spark.rdd.RDD
 import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
+import de.kp.spark.core.source.SequenceSource
+
 import de.kp.spark.fsm.{Configuration,TSR}
-import de.kp.spark.fsm.source.SequenceSource
 
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.sink._
 
+import de.kp.spark.fsm.spec.SequenceSpec
 import scala.collection.JavaConversions._
 
 class TSRActor(@transient val sc:SparkContext) extends BaseActor {
   
-  private val (host,port) = Configuration.redis
+  private val config = Configuration
+  
+  private val (host,port) = config.redis
   val redis = new RedisSink(host,port.toInt)
 
   def receive = {
@@ -53,7 +57,8 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
  
         try {
           
-          val dataset = new SequenceSource(sc).get(req)
+          val source = new SequenceSource(sc,config,SequenceSpec)
+          val dataset = source.connect(req)
           
           val (k,minconf) = params     
           findRules(req,dataset,k,minconf)

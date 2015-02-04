@@ -19,14 +19,9 @@ package de.kp.spark.fsm
 */
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-
 import org.apache.spark.rdd.RDD
 
 import de.kp.core.spade._
-import de.kp.spark.core.source.FileSource
-
-import de.kp.spark.fsm.source.{SequenceModel}
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ArrayBuffer,HashMap}
@@ -37,19 +32,6 @@ object SPADE extends Serializable {
 
   private val keep = true
   private val verbose = false
-
-  def extractFilePatterns(@transient sc:SparkContext,support:Double,dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
-    
-    val model = new SequenceModel(sc)
-    
-    val path = Configuration.input(0)
-    val rawset = new FileSource(sc).connect(path,null)
-    
-    val dataset = model.buildFile(null,rawset)
-    
-    extractRDDPatterns(dataset,support,dfs,stats)
-    
-  }
 
   def extractRDDPatterns(dataset:RDD[(Int,String)], support:Double, dfs:Boolean=true,stats:Boolean=true):List[Pattern] = {
 	
