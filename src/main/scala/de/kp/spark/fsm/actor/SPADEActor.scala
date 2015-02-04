@@ -22,7 +22,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import de.kp.spark.core.model._
+
 import de.kp.spark.core.source.SequenceSource
+import de.kp.spark.core.source.handler.SPMFHandler
 
 import de.kp.spark.fsm.{Configuration,SPADE}
 
@@ -55,7 +57,7 @@ class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
         try {
           
           val source = new SequenceSource(sc,config,SequenceSpec)
-          val dataset = source.connect(req)
+          val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
          
           val support = params     
           findPatterns(req,dataset,support)

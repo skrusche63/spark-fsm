@@ -25,6 +25,7 @@ import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
 import de.kp.spark.core.source.SequenceSource
+import de.kp.spark.core.source.handler.SPMFHandler
 
 import de.kp.spark.fsm.{Configuration,TSR}
 
@@ -58,7 +59,7 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
         try {
           
           val source = new SequenceSource(sc,config,SequenceSpec)
-          val dataset = source.connect(req)
+          val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
           
           val (k,minconf) = params     
           findRules(req,dataset,k,minconf)
