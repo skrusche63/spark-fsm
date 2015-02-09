@@ -1,6 +1,6 @@
 <fieldspec>
-	<field name="timestamp" type="Long">timestamp</field>
-	<field name="user" type="String">user</field>
-    <field name="group" type="String">order</field>	
-    <field name="item" type="Integer">item</field>
+	<field name="timestamp" type="long">timestamp</field>
+	<field name="user" type="string">user</field>
+    <field name="group" type="string">order</field>	
+    <field name="item" type="integer">item</field>
 </fieldspec>

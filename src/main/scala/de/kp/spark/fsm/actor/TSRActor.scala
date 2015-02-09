@@ -58,7 +58,7 @@ class TSRActor(@transient val sc:SparkContext) extends BaseActor {
  
         try {
           
-          val source = new SequenceSource(sc,config,SequenceSpec)
+          val source = new SequenceSource(sc,config,new SequenceSpec(req))
           val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
           
           val (k,minconf) = params     
