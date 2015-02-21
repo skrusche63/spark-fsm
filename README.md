@@ -4,8 +4,6 @@
 
 ## Reactive Series Analysis Engine
 
-![Series Analysis Engine Overview](https://raw.githubusercontent.com/skrusche63/spark-fsm/master/images/series-analysis-overview.png)
-
 The Series Analysis Engine is one of the nine members of the open ensemble and is built to support sequential pattern mining with a new and redefined 
 mining algorithm. The approach overcomes the well-known "threshold problem" and makes it a lot easier to directly leverage the resulting patterns and rules.
 
@@ -65,78 +63,28 @@ We adapted Viger's original implementation and made his **Top-K Sequential Rules
 
 ### Akka
 
-Akka is a toolkit to build concurrent scalable applications, using the [Actor Model](http://en.wikipedia.org/wiki/Actor_model). Akka comes with a feature called *Akka Remoting*, which easily enables to setup a communication between software components in a peer-to-peer fashion.
+Akka is a toolkit to build concurrent scalable applications, using the [Actor Model](http://en.wikipedia.org/wiki/Actor_model). Akka comes with a feature called *Akka Remoting*, which easily enables to setup 
+a communication between software components in a peer-to-peer fashion.
 
-Akka and Akka Remoting are an appropriate means to establish a communication between prior independent software components - easy and fast.
+Akka is leveraged in this software project to enable external software projects to interact with this Series Analysis engine. Besides external communication, Akka is also used to implement the internal 
+interaction between the different functional building blocks of the engine:
 
----
-
-### Spark
-
-From the [Apache Spark](https://spark.apache.org/) website:
-
-> Apache Spark is a fast and general engine for large-scale data processing and is up to 100x faster than Hadoop MR in memory.
-
-The increasing number of associated projects, such as [Spark SQL](https://spark.apache.org/sql/) and [Spark Streaming](https://spark.apache.org/streaming/), enables Spark to become the future  Unified Data Insight Platform. With this perspective in mind, we have integrated recently published Association Rule algorithms with Spark. This allows for a seamless usage of association rule mining either with batch or streaming data sources.
+* Administration
+* Indexing & Tracking
+* Training
+* Retrieval 
 
 ---
 
 ### Data Sources
 
-The Reactive Series Analysis Engine supports a rapidly increasing list of applicable data sources. Below is a list of data sources that are already supported or 
-will be supported in the near future:
+The Reactive Association Analysis Engine supports a rapidly increasing list of applicable data sources. Below is a list of data sources that are already supported:
 
-#### Elasticsearch
+* Cassandra,
+* Elasticsearch,
+* HBase,
+* MongoDB,
+* Parquent,
 
-[Elasticsearch](http://www.elasticsearch.org) is a flexible and powerful distributed real-time search and analytics engine. Besides linguistic and semantic 
-enrichment, for data in a search index there is an increasing demand to apply analytics, knowledge discovery & data mining, and even predictive analytics 
-to gain deeper insights into the data and further increase their business value.
-
-A step towards analytics is the recently introduced combination with [Logstash](http://logstash.net/) to easily store logs and other time based event data 
-from any system in a single place.
-
-The Series Analysis Engine comes with a connector to Elasticsearch and thus brings knowledge discovery and data mining to the world of indexed data. The use 
-cases are endless. 
-
-#### Piwik Analytics
-
-[Piwik Analytics](http://piwik.org) is the leading and widely used open source web analytics platform, and is an excellent starting point to move into the world 
-of dynamic catalogs, product recommendations, purchase predictions and more.
-
-#### Pimcore (coming soon)
-
-[Pimcore](http://pimcore.org) is an open source multi-channel experience and engagement management platform and contains a variety of integrated applications such 
-as Digital Asset Management, Ecommerce Framework, Marketing & Campaign Management, Multi-Channel & Web-to-Print, Product Information Management, Targeting & Personalization and
-Web Content Management.
-
-#### Relational Databases
-
-Elasticsearch is one of the connectors actually supported. As many ecommerce sites and analytics platforms work with JDBC databases, the Series Analysis Engine 
-also comes with a JDBC connector.
-
----
-
-### Data Sinks
-
-#### Elasticsearch
-
-The Series Analysis Engine writes discovered patterns and rules to an Elasticsearch index. This ensures that these rules e.g. may directly be used for product recommendations delivered with 
-appropriate product search results.
-
-#### Redis
-
-[Redis](http://redis.io) is open source and an advanced key-value cache and store, often referred to as a distributed data structure server. The Series Analysis Engine writes discovered patterns 
-and rules to a Redis instance as a multi-purpose serving layer for software enrichments that are not equipped with Elasticsearch.
-
----
-
-### Technology
-
-* Akka
-* Akka Remoting
-* Elasticsearch
-* Redis
-* Spark
-* Spark Streaming
-* Spray
+and JDBC database.
 
