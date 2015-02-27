@@ -18,7 +18,6 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import de.kp.spark.core.model._
@@ -26,14 +25,14 @@ import de.kp.spark.core.model._
 import de.kp.spark.core.source.SequenceSource
 import de.kp.spark.core.source.handler.SPMFHandler
 
-import de.kp.spark.fsm.{Configuration,SPADE}
+import de.kp.spark.fsm.{Configuration,RequestContext,SPADE}
 
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.sink.RedisSink
 
 import de.kp.spark.fsm.spec.SequenceSpec
 
-class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
+class SPADEActor(@transient val ctx:RequestContext) extends BaseActor {
   
   private val config = Configuration
   
@@ -56,7 +55,7 @@ class SPADEActor(@transient val sc:SparkContext) extends BaseActor {
  
         try {
           
-          val source = new SequenceSource(sc,config,new SequenceSpec(req))
+          val source = new SequenceSource(ctx.sc,config,new SequenceSpec(req))
           val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
          
           val support = params     

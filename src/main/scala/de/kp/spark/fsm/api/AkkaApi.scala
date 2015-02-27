@@ -18,14 +18,14 @@ package de.kp.spark.fsm.api
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import org.apache.spark.SparkContext
 import akka.actor.{ActorSystem,Props}
 
+import de.kp.spark.fsm.RequestContext
 import de.kp.spark.fsm.actor.FSMMaster
 
-class AkkaApi(system:ActorSystem,@transient val sc:SparkContext) {
+class AkkaApi(system:ActorSystem,@transient val ctx:RequestContext) {
 
-  val master = system.actorOf(Props(new FSMMaster(sc)), name="series-master")
+  val master = system.actorOf(Props(new FSMMaster(ctx)), name="series-master")
 
   def start() {
      while (true) {}   

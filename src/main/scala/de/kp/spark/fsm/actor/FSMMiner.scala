@@ -18,7 +18,6 @@ package de.kp.spark.fsm.actor
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import org.apache.spark.SparkContext
 import akka.actor.{ActorRef,Props}
 
 import de.kp.spark.core.Names
@@ -26,10 +25,10 @@ import de.kp.spark.core.Names
 import de.kp.spark.core.actor._
 import de.kp.spark.core.model._
 
-import de.kp.spark.fsm.Configuration
+import de.kp.spark.fsm.{Configuration,RequestContext}
 import de.kp.spark.fsm.model._
 
-class FSMMiner(@transient val sc:SparkContext) extends BaseTrainer(Configuration) {
+class FSMMiner(@transient val ctx:RequestContext) extends BaseTrainer(Configuration) {
 
   protected def validate(req:ServiceRequest):Option[String] = {
 
@@ -76,10 +75,10 @@ class FSMMiner(@transient val sc:SparkContext) extends BaseTrainer(Configuration
 
     val algorithm = req.data(Names.REQ_ALGORITHM)
     if (algorithm == Algorithms.SPADE) {      
-      context.actorOf(Props(new SPADEActor(sc)))      
+      context.actorOf(Props(new SPADEActor(ctx)))      
       
     } else {
-       context.actorOf(Props(new TSRActor(sc)))
+       context.actorOf(Props(new TSRActor(ctx)))
     
     }
     

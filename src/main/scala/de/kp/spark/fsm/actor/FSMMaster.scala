@@ -18,15 +18,14 @@ package de.kp.spark.fsm.actor
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import org.apache.spark.SparkContext
 import akka.actor.{ActorRef,Props}
 
 import de.kp.spark.core.actor._
 import de.kp.spark.core.model._
 
-import de.kp.spark.fsm.Configuration
+import de.kp.spark.fsm.{Configuration,RequestContext}
 
-class FSMMaster(@transient sc:SparkContext) extends BaseMaster(Configuration) {
+class FSMMaster(@transient ctx:RequestContext) extends BaseMaster(Configuration) {
   
   protected def actor(worker:String):ActorRef = {
     
@@ -51,7 +50,7 @@ class FSMMaster(@transient sc:SparkContext) extends BaseMaster(Configuration) {
        */        
       case "status" => context.actorOf(Props(new StatusQuestor(Configuration)))
   
-      case "miner" => context.actorOf(Props(new FSMMiner(sc)))
+      case "miner" => context.actorOf(Props(new FSMMiner(ctx)))
       case "get"   => context.actorOf(Props(new FSMQuestor()))
       
       case _ => null
