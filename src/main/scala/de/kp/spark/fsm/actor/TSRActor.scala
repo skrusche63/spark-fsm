@@ -18,74 +18,38 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.apache.spark.rdd.RDD
-
 import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
 import de.kp.spark.core.source.SequenceSource
 import de.kp.spark.core.source.handler.SPMFHandler
 
-import de.kp.spark.fsm.{Configuration,RequestContext,TSR}
+import de.kp.spark.fsm.{RequestContext,TSR}
 
 import de.kp.spark.fsm.model._
 import de.kp.spark.fsm.sink._
 
 import de.kp.spark.fsm.spec.SequenceSpec
-import scala.collection.JavaConversions._
+import scala.collection.mutable.ArrayBuffer
 
-class TSRActor(@transient val ctx:RequestContext) extends BaseActor {
+class TSRActor(@transient ctx:RequestContext) extends TrainActor(ctx) {
   
-  private val config = Configuration
-  
-  private val (host,port) = config.redis
-  val redis = new RedisSink(host,port.toInt)
-
-  def receive = {
-    
-    case req:ServiceRequest => {
-
-      val params = properties(req)
-      val missing = (params == null)
-
-      /* Send response to originator of request */
-      sender ! response(req, missing)
-
-      if (missing == false) {
-        /* Register status */
-        cache.addStatus(req,ResponseStatus.MINING_STARTED)
- 
-        try {
-          
-          val source = new SequenceSource(ctx.sc,config,new SequenceSpec(req))
-          val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
-          
-          val (k,minconf) = params     
-          findRules(req,dataset,k,minconf)
-
-        } catch {
-          case e:Exception => cache.addStatus(req,ResponseStatus.FAILURE)          
-        }
- 
-
-      }
+  override def train(req:ServiceRequest) {
+         
+    val source = new SequenceSource(ctx.sc,ctx.config,new SequenceSpec(req))
+    val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
       
-      context.stop(self)
+    val params = ArrayBuffer.empty[Param]
           
-    }
+    val k = req.data("k").toInt
+    params += Param("k","integer",k.toString)
     
-    case _ => {
-      
-      log.error("Unknown request.")
-      context.stop(self)
-      
-    }
-    
-  }
-  
-  private def findRules(req:ServiceRequest,dataset:RDD[(Int,String)],k:Int,minconf:Double) {
-     
-    val total = dataset.count()
+    val minconf = req.data("minconf").toDouble
+    params += Param("minconf","double",minconf.toString)
+
+    cache.addParams(req, params.toList)
+
+    val total = ctx.sc.broadcast(dataset.count())
     val rules = TSR.extractRDDRules(dataset,k,minconf).map(rule => {
      
       val antecedent = rule.getItemset1().toList
@@ -94,17 +58,11 @@ class TSRActor(@transient val ctx:RequestContext) extends BaseActor {
       val support    = rule.getAbsoluteSupport()
       val confidence = rule.getConfidence()
 	
-      new Rule(antecedent,consequent,support,total,confidence)
+      new Rule(antecedent,consequent,support,total.value,confidence)
             
     })
           
     saveRules(req,new Rules(rules))
-          
-    /* Update status */
-    cache.addStatus(req,ResponseStatus.MINING_FINISHED)
-
-    /* Notify potential listeners */
-    notify(req,ResponseStatus.MINING_FINISHED)
 
   }  
   
@@ -141,20 +99,16 @@ class TSRActor(@transient val ctx:RequestContext) extends BaseActor {
   }
   
   
-  private def properties(req:ServiceRequest):(Int,Double) = {
-      
-    try {
-      
-      val k = req.data("k").asInstanceOf[Int]
-      val minconf = req.data("minconf").asInstanceOf[Double]
-        
-      return (k,minconf)
-        
-    } catch {
-      case e:Exception => {
-         return null          
-      }
-    }
+  override def validate(req:ServiceRequest) = {
+
+    if (req.data.contains("name") == false) 
+      throw new Exception("No name for sequential rules provided.")
+
+    if (req.data.contains("k") == false)
+      throw new Exception("Parameter 'k' is missing.")
+    
+    if (req.data.contains("minconf") == false)
+      throw new Exception("Parameter 'minconf' is missing.")
     
   }
   

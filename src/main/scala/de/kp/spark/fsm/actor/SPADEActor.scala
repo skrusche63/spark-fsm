@@ -18,70 +18,31 @@ package de.kp.spark.fsm.actor
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-import org.apache.spark.rdd.RDD
-
 import de.kp.spark.core.model._
 
 import de.kp.spark.core.source.SequenceSource
 import de.kp.spark.core.source.handler.SPMFHandler
 
-import de.kp.spark.fsm.{Configuration,RequestContext,SPADE}
+import de.kp.spark.fsm.{RequestContext,SPADE}
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.sink.RedisSink
 
 import de.kp.spark.fsm.spec.SequenceSpec
+import scala.collection.mutable.ArrayBuffer
 
-class SPADEActor(@transient val ctx:RequestContext) extends BaseActor {
+class SPADEActor(@transient ctx:RequestContext) extends TrainActor(ctx) {
   
-  private val config = Configuration
-  
-  private val (host,port) = config.redis
-  val redis = new RedisSink(host,port.toInt)
-
-  def receive = {
-    
-    case req:ServiceRequest => {
-      
-      val params = properties(req)
-      val missing = (params == 0.0)
-
-      /* Send response to originator of request */
-      sender ! response(req, missing)
-
-      if (missing == false) {
-        /* Register status */
-        cache.addStatus(req,ResponseStatus.MINING_STARTED)
- 
-        try {
+  override def train(req:ServiceRequest) {
           
-          val source = new SequenceSource(ctx.sc,config,new SequenceSpec(req))
-          val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
-         
-          val support = params     
-          findPatterns(req,dataset,support)
-
-        } catch {
-          case e:Exception => cache.addStatus(req,ResponseStatus.FAILURE)          
-        }
- 
-
-      }
+    val source = new SequenceSource(ctx.sc,ctx.config,new SequenceSpec(req))
+    val dataset = SPMFHandler.sequence2SPMF(source.connect(req))
       
-      context.stop(self)
-          
-    }
+    val params = ArrayBuffer.empty[Param]
     
-    case _ => {
-      
-      log.error("Unknown request.")
-      context.stop(self)
-      
-    }
-    
-  }
-  
-  private def findPatterns(req:ServiceRequest,dataset:RDD[(Int,String)],support:Double) {
+    val support = req.data("support").toDouble        
+    params += Param("support","double",support.toString)
+
+    cache.addParams(req, params.toList)
      
     val patterns = SPADE.extractRDDPatterns(dataset,support).map(pattern => {
       
@@ -97,12 +58,6 @@ class SPADEActor(@transient val ctx:RequestContext) extends BaseActor {
     }).toList
           
     savePatterns(req,new FSMPatterns(patterns))
-          
-    /* Update status */
-    cache.addStatus(req,ResponseStatus.MINING_FINISHED)
-
-    /* Notify potential listeners */
-    notify(req,ResponseStatus.MINING_FINISHED)
 
   }  
   
@@ -112,18 +67,13 @@ class SPADEActor(@transient val ctx:RequestContext) extends BaseActor {
     
   }
   
-  private def properties(req:ServiceRequest):Double = {
-      
-    try {
-   
-      val support = req.data("support").toDouble        
-      return support
-        
-    } catch {
-      case e:Exception => {
-         return 0.0          
-      }
-    }
+  override def validate(req:ServiceRequest) {
+
+    if (req.data.contains("name") == false) 
+      throw new Exception("No name for sequential patterns provided.")
+
+    if (req.data.contains("support") == false)
+      throw new Exception("Parameter 'support' is missing.")
     
   }
   

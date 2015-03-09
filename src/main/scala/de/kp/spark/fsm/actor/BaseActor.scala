@@ -25,24 +25,9 @@ import de.kp.spark.core.model._
 import de.kp.spark.core.redis.RedisCache
 
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.{Configuration,RemoteContext}
+import de.kp.spark.fsm.Configuration
 
 abstract class BaseActor extends RootActor(Configuration) {
-
-  /**
-   * Notify all registered listeners about a certain status
-   */
-  protected def notify(req:ServiceRequest,status:String) {
-
-    /* Build message */
-    val data = Map(Names.REQ_UID -> req.data(Names.REQ_UID))
-    val response = new ServiceResponse(req.service,req.task,data,status)	
-    
-    /* Notify listeners */
-    val message = Serializer.serializeResponse(response)    
-    RemoteContext.notify(message)
-    
-  }
   
   protected def response(req:ServiceRequest,missing:Boolean):ServiceResponse = {
     
