@@ -53,15 +53,15 @@ class SPADEActor(@transient ctx:RequestContext) extends TrainActor(ctx) {
       val support = cardinality.trim().toInt
       val itemsets = sequence.trim().split("-1").map(itemset => itemset.trim().split(" ").map(_.toInt).toList).toList
 
-      new FSMPattern(support,itemsets)
+      new Pattern(support,itemsets)
       
     }).toList
           
-    savePatterns(req,new FSMPatterns(patterns))
+    savePatterns(req,new Patterns(patterns))
 
   }  
   
-  private def savePatterns(req:ServiceRequest,patterns:FSMPatterns) {
+  private def savePatterns(req:ServiceRequest,patterns:Patterns) {
     
     redis.addPatterns(req,patterns)
     

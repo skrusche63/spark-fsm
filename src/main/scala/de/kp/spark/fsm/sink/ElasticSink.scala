@@ -32,7 +32,7 @@ import scala.collection.mutable.HashMap
 
 class ElasticSink {
 
-  def addPatterns(req:ServiceRequest, patterns:FSMPatterns) {
+  def addPatterns(req:ServiceRequest, patterns:Patterns) {
     /*
      * Not implemented yet
      */

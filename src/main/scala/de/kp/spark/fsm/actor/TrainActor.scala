@@ -23,15 +23,15 @@ import org.apache.spark.rdd.RDD
 import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
-import de.kp.spark.fsm.RequestContext
+import de.kp.spark.core.redis.RedisDB
 
+import de.kp.spark.fsm.RequestContext
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.sink._
 
 abstract class TrainActor(@transient ctx:RequestContext) extends BaseActor {
 
   private val (host,port) = ctx.config.redis
-  protected val redis = new RedisSink(host,port.toInt)            
+  protected val redis = new RedisDB(host,port.toInt)            
   
   def receive = {
 

@@ -21,17 +21,17 @@ package de.kp.spark.fsm.actor
 import de.kp.spark.core.Names
 import de.kp.spark.core.model._
 
-import de.kp.spark.fsm.Configuration
+import de.kp.spark.core.redis.RedisDB
 
+import de.kp.spark.fsm.Configuration
 import de.kp.spark.fsm.model._
-import de.kp.spark.fsm.sink.RedisSink
 
 class FSMQuestor extends BaseActor {
 
   implicit val ec = context.dispatcher
   
   private val (host,port) = Configuration.redis
-  val sink = new RedisSink(host,port.toInt)
+  val redis = new RedisDB(host,port.toInt)
   
   def receive = {
 
@@ -45,7 +45,7 @@ class FSMQuestor extends BaseActor {
         
         case "antecedent" => {
 
-          val resp = if (sink.rulesExist(req) == false) {           
+          val resp = if (redis.rulesExist(req) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
@@ -56,7 +56,7 @@ class FSMQuestor extends BaseActor {
              } else {
 
                val items = req.data(Names.REQ_ITEMS).split(",").map(_.toInt).toList
-               val rules = sink.rulesByAntecedent(req,items)
+               val rules = redis.rulesByAntecedent(req,items)
                
                val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
                new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
@@ -72,7 +72,7 @@ class FSMQuestor extends BaseActor {
         
         case "consequent" => {
 
-          val resp = if (sink.rulesExist(req) == false) {           
+          val resp = if (redis.rulesExist(req) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {    
@@ -83,7 +83,7 @@ class FSMQuestor extends BaseActor {
              } else {
 
                val items = req.data(Names.REQ_ITEMS).split(",").map(_.toInt).toList
-               val rules = sink.rulesByConsequent(req,items)
+               val rules = redis.rulesByConsequent(req,items)
                
                val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
                new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
@@ -99,12 +99,12 @@ class FSMQuestor extends BaseActor {
 
         case "pattern" => {
 
-          val resp = if (sink.patternsExist(uid) == false) {           
+          val resp = if (redis.patternsExist(req) == false) {           
             failure(req,Messages.PATTERNS_DO_NOT_EXIST(uid))
             
           } else {            
             
-            val patterns = sink.patterns(uid)
+            val patterns = redis.patterns(req)
                
             val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> patterns)
             new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)
@@ -118,12 +118,12 @@ class FSMQuestor extends BaseActor {
         
         case "rule" => {
           
-          val resp = if (sink.rulesExist(req) == false) {           
+          val resp = if (redis.rulesExist(req) == false) {           
             failure(req,Messages.RULES_DO_NOT_EXIST(uid))
             
           } else {            
             
-            val rules = sink.rulesAsString(req)
+            val rules = redis.rulesAsString(req)
                
             val data = Map(Names.REQ_UID -> uid, Names.REQ_RESPONSE -> rules)
             new ServiceResponse(req.service,req.task,data,ResponseStatus.SUCCESS)

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>spark-fsm</groupId>
   <artifactId>spark-fsm</artifactId>
-  <version>0.2.2</version>
+  <version>0.2.3</version>
   <name>Spark-FSM</name>
   <description>Reactive Series Analysis engine of Predictiveworks.</description>
   <inceptionYear>2010</inceptionYear>

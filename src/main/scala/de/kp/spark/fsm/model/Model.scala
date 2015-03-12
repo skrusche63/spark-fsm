@@ -25,20 +25,7 @@ import org.json4s.native.Serialization.{read,write}
 
 import de.kp.spark.core.model._
 
-case class FSMPattern(
-  support:Int,itemsets:List[List[Int]])
-
-case class FSMPatterns(items:List[FSMPattern])
-
-object Serializer extends BaseSerializer {
-    
-  /*
-   * Support for serialization and deserialization of patterns
-   */
-  def serializePatterns(patterns:FSMPatterns):String = write(patterns)  
-  def deserializePatterns(patterns:String):FSMPatterns = read[FSMPatterns](patterns)
-  
-}
+object Serializer extends BaseSerializer
 
 object Algorithms {
   
